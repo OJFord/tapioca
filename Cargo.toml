@@ -1,0 +1,14 @@
+[package]
+name = "tapioca"
+version = "0.1.0"
+authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
+
+[lib]
+name = "tapioca"
+path = "src/lib.rs"
+
+[dependencies.tapioca_macros]
+path = "tapioca_macros"
+
+[dependencies.tapioca_mir_plugin]
+path = "tapioca_mir_plugin"
