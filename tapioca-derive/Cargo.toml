@@ -5,3 +5,7 @@ authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 
 [lib]
 proc-macro = true
+
+[dependencies]
+syn = "0.11"
+quote = "0.3"

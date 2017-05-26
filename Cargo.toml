@@ -6,6 +6,7 @@ authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 [lib]
 name = "tapioca"
 path = "src/lib.rs"
+crate-type = ["dylib"]
 
 [dependencies]
 tapioca-derive = {path="tapioca-derive"}
