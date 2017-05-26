@@ -1,9 +1,7 @@
 [package]
-name = "tapioca_macros"
+name = "tapioca-derive"
 version = "0.1.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 
 [lib]
-name = "tapioca_macros"
-path = "src/lib.rs"
 proc-macro = true
