@@ -23,6 +23,17 @@ pub fn derive_infer_schema(input: TokenStream) -> TokenStream {
 }
 
 fn infer_schema(ident: syn::Ident, schema_url: &str) -> quote::Tokens {
+    let schema_name = ident.as_ref();
+    let schema = match parse::parse_schema(schema_name) {
+        Ok(s) => s,
+        Err(_) => {
+            match parse::fetch_schema(schema_name, schema_url) {
+                Ok(s) => s,
+                Err(e) => panic!("{} schema not found: {}", ident, e.description()),
+            }
+        }
+    };
+
     quote! {
         trait Schema {
             fn test();
