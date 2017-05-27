@@ -13,7 +13,7 @@ type SchemaResult = Result<Schema, Box<Error>>;
 
 fn local_copy_location(schema_name: &str) -> String {
     fs::create_dir_all("tapioca-schemata");
-    "tapioca-schemata/".to_owned() + schema_name
+    format!("tapioca-schemata/{}.yml", schema_name)
 }
 
 pub(super) fn parse_schema<'a>(schema_name: &'a str) -> SchemaResult {
