@@ -2,8 +2,7 @@ use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
 
-extern crate hyper;
-use self::hyper::client::Client;
+extern crate reqwest;
 
 extern crate yaml_rust;
 use self::yaml_rust::{Yaml, YamlLoader};
@@ -36,9 +35,14 @@ pub(super) fn parse_schema(schema_name: &str) -> SchemaResult {
 pub(super) fn fetch_schema(schema_name: &str, schema_url: &str) -> SchemaResult {
     let mut file = fs::File::create(local_copy_location(schema_name))?;
     let mut buf = String::new();
-    client.get(schema_url).send()?
-        .read_to_string(&mut buf);
 
-    file.write_all(buf.as_ref())?;
+    let mut resp = reqwest::get(schema_url)?;
+    if resp.status().is_success() {
+        resp.read_to_string(&mut buf);
+        file.write_all(buf.as_ref())?;
+
         parse_first_doc(&schema_name, &buf)
+    } else {
+        Err(From::from(format!("Failed to fetch schema: {}", resp.status())))
+    }
 }
