@@ -3,7 +3,19 @@ use ::syn::Ident;
 use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 
-pub(super) fn infer_schema(name: &Ident, schema: &Yaml) -> Result<Tokens, Box<Error>> {
+const SCHEMA_VERSION_KEY: &'static str = "openapi";
+
+type TokensResult = Result<Tokens, Box<Error + Send + Sync>>;
+
+pub(super) fn infer_schema(name: &Ident, schema: &Yaml) -> TokensResult {
+    match schema[SCHEMA_VERSION_KEY].as_str() {
+        None => Err(From::from("Unspecified schema version.")),
+        Some("3.0.0") => infer_schema_v3(&name, &schema),
+        Some(version) => Err(From::from(format!("Unsupported schema version: {}", version))),
+    }
+}
+
+fn infer_schema_v3(name: &Ident, schema: &Yaml) -> TokensResult {
     Ok(quote! {
         extern crate tapioca;
         use tapioca::Schema;
