@@ -1,11 +1,8 @@
 use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
-
-extern crate reqwest;
-
-extern crate yaml_rust;
-use self::yaml_rust::{Yaml, YamlLoader};
+use ::reqwest;
+use ::yaml_rust::{Yaml, YamlLoader};
 
 type Schema = Yaml;
 type SchemaResult = Result<Schema, Box<Error + Send + Sync>>;

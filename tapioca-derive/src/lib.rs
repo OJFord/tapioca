@@ -1,14 +1,17 @@
 extern crate proc_macro;
-extern crate syn;
 #[macro_use] extern crate quote;
+extern crate reqwest;
+extern crate syn;
+extern crate yaml_rust;
 
 use proc_macro::TokenStream;
 use syn::{Lit, MetaItem};
 
 mod parse;
+mod infer;
 
 #[proc_macro_derive(Schema, attributes(schema_options))]
-pub fn derive_infer_schema(input: TokenStream) -> TokenStream {
+pub fn derive_schema(input: TokenStream) -> TokenStream {
     let ast = syn::parse_macro_input(&input.to_string()).unwrap();
 
     let schema_url = &ast.attrs.iter()
@@ -19,10 +22,10 @@ pub fn derive_infer_schema(input: TokenStream) -> TokenStream {
         })
         .expect("Schema URL malformed or not given.");
 
-    infer_schema(ast.ident, &schema_url).parse().unwrap()
+    impl_schema(ast.ident, &schema_url).parse().unwrap()
 }
 
-fn infer_schema(ident: syn::Ident, schema_url: &str) -> quote::Tokens {
+fn impl_schema(ident: syn::Ident, schema_url: &str) -> quote::Tokens {
     let schema_name = ident.as_ref();
     let schema = match parse::parse_schema(schema_name) {
         Ok(s) => s,
@@ -34,15 +37,8 @@ fn infer_schema(ident: syn::Ident, schema_url: &str) -> quote::Tokens {
         }
     };
 
-    quote! {
-        trait Schema {
-            fn test();
-        }
-
-        impl Schema for #ident {
-            fn test() {
-                println!("OK! {}", #schema_url);
-            }
-        }
+    match infer::infer_schema(&ident, &schema) {
+        Ok(tokens) => tokens,
+        Err(error) => panic!("Failed to infer schema: {}", error),
     }
 }
