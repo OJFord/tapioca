@@ -8,14 +8,6 @@ pub(super) fn infer_v3(api_st: &Ident, schema: &Yaml) -> TokensResult {
     let mut tokens = quote! {
         extern crate tapioca;
         use tapioca::Schema;
-
-        impl Schema for #api_st {
-            fn get(&self) {
-                //!TODO: Replace for compile_error! macro
-                //! when rust-lang/rust#40872 implemented
-                panic!("GET not allowed for /")
-            }
-        }
     };
 
     let paths = schema["paths"].clone();
