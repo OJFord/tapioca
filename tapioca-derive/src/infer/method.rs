@@ -1,6 +1,7 @@
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::parameter;
 use infer::TokensResult;
 
 const METHODS: &'static [&'static str] = &[
@@ -23,9 +24,15 @@ fn fn_ident(method: &str) -> Ident {
 
 pub(super) fn infer_v3(path_st: &Ident, method: &str, schema: &Yaml) -> TokensResult {
     let method_fn = fn_ident(method);
+    let parameters = schema["parameters"]
+        .as_vec().expect("Parameters must be an array.");
+
+    let query_params = parameters.iter()
+        .filter(|p| p["in"] == Yaml::from_str("query"))
+        .map(|p| parameter::infer_v3(p).unwrap());
 
     Ok(quote! {
-        fn #method_fn(&self) {
+        fn #method_fn(&self, #(#query_params),*) {
             panic!("Not implemented!")
         }
     })

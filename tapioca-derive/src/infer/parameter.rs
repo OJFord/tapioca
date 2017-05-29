@@ -1,0 +1,38 @@
+use ::inflector::Inflector;
+use ::syn::Ident;
+use ::yaml_rust::Yaml;
+
+use infer::TokensResult;
+
+fn infer_type(schema: &Yaml) -> TokensResult {
+    match schema["type"].as_str() {
+        None => Err(From::from("Parameter schema type must be a string.")),
+        Some("integer") => {
+            match schema["format"].as_str() {
+                None => Err(From::from("Parameter schema format must be a string.")),
+                Some("int32") => Ok(quote!{i32}),
+                Some("int64") => Ok(quote!{i64}),
+                Some(_) => Err(From::from("Invalid format for `integer` type.")),
+            }
+        },
+        Some("number") => {
+            match schema["format"].as_str() {
+                None => Err(From::from("Parameter schema format must be a string.")),
+                Some("float") => Ok(quote!{f32}),
+                Some("double") => Ok(quote!{f64}),
+                Some(_) => Err(From::from("Invalid format for `number` type.")),
+            }
+        },
+        //TODO: the rest!
+        Some(ptype) => Err(From::from(format!("Parameter type `{}` invalid", ptype))),
+    }
+}
+
+pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
+    let ident = schema["name"]
+        .as_str().expect("Parameter name must be a string.")
+        .to_snake_case();
+    let type_tt = infer_type(&schema["schema"])?;
+
+    Ok(quote!{#ident: #type_tt})
+}

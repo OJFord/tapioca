@@ -5,6 +5,7 @@ use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 
 mod method;
+mod parameter;
 mod path;
 mod schema;
 
