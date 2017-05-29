@@ -17,7 +17,15 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
     let path_st = struct_ident(api_st, path);
     let path_fn = fn_ident(path);
 
-    let mut tokens = quote! {
+    let method_schemata = schema.as_hash().expect("Path must be a map.");
+    let mut methods_tt = quote!{};
+
+    for (method, method_schema) in method_schemata {
+        let method = method.as_str().expect("Method must be a string.");
+        methods_tt.append(method::infer_v3(&path_st, &method, &method_schema)?);
+    }
+
+    Ok(quote! {
         struct #path_st;
 
         impl #api_st {
@@ -25,11 +33,9 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
                 #path_st
             }
         }
-    };
 
-    for (method, method_schema) in schema.as_hash().expect("Path must be a map.") {
-        let method = method.as_str().expect("Method must be a string.");
-        tokens.append(method::infer_v3(&path_st, &method, &method_schema)?);
-    }
-    Ok(tokens)
+        impl Schema for #path_st {
+            #methods_tt
+        }
+    })
 }
