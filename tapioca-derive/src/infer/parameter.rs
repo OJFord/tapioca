@@ -27,7 +27,23 @@ fn infer_type(schema: &Yaml) -> TokensResult {
                 Some(_) => Err(From::from("Invalid format for `number` type.")),
             }
         },
-        //TODO: the rest!
+        Some("string") => {
+            match schema["format"].as_str() {
+                None => Ok(quote!{String}),
+                Some("byte") => Ok(quote!{tapioca::Base64}),
+                Some("binary") => Ok(quote!{&[u8]}),
+                Some("date") => Ok(quote!{tapioca::Date}),
+                Some("date-time") => Ok(quote!{tapioca::DateTime}),
+                Some("password") => Ok(quote!{String}),
+                Some(_) => Ok(quote!{String}),
+            }
+        },
+        Some("boolean") => {
+            match schema["format"].as_str() {
+                None => Ok(quote!{bool}),
+                Some(_) => Err(From::from("Unexpected format for `boolean` type.")),
+            }
+        },
         Some(ptype) => Err(From::from(format!("Parameter type `{}` invalid", ptype))),
     }
 }
