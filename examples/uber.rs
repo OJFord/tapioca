@@ -9,5 +9,9 @@ extern crate tapioca_derive;
 struct UberAPI;
 
 fn main() {
-    UberAPI::products().get()
+    let latlong = UberAPIProductGetQueryParams{
+        latitude: 10.3,
+        longitude: 237.8,
+    };
+    UberAPI::products().get(latlong);
 }

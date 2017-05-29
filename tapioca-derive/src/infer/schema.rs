@@ -7,7 +7,7 @@ use infer::TokensResult;
 pub(super) fn infer_v3(api_st: &Ident, schema: &Yaml) -> TokensResult {
     let mut tokens = quote! {
         extern crate tapioca;
-        use tapioca::Schema;
+        use tapioca::*;
     };
 
     let paths = schema["paths"].clone();

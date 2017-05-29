@@ -4,6 +4,10 @@ use ::yaml_rust::Yaml;
 
 use infer::TokensResult;
 
+fn ident(param: &str) -> Ident {
+    Ident::new(param.to_snake_case())
+}
+
 fn infer_type(schema: &Yaml) -> TokensResult {
     match schema["type"].as_str() {
         None => Err(From::from("Parameter schema type must be a string.")),
@@ -29,9 +33,9 @@ fn infer_type(schema: &Yaml) -> TokensResult {
 }
 
 pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
-    let ident = schema["name"]
+    let ident = ident(schema["name"]
         .as_str().expect("Parameter name must be a string.")
-        .to_snake_case();
+    );
     let type_tt = infer_type(&schema["schema"])?;
 
     Ok(quote!{#ident: #type_tt})
