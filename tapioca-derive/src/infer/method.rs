@@ -50,10 +50,13 @@ pub(super) fn infer_v3(path_st: &Ident, method: &str, schema: &Yaml) -> TokensRe
     }
 
     Ok(quote! {
+        #[allow(dead_code)]
         struct #query_param_st {
             #(#query_params),*
         }
 
+        #[allow(dead_code)]
+        #[allow(unused_variables)]
         impl #method_tr for #path_st {
             type QueryParams = #query_param_st;
             type Response = ();

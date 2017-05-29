@@ -26,8 +26,10 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
     }
 
     Ok(quote! {
+        #[allow(dead_code)]
         struct #path_st;
 
+        #[allow(dead_code)]
         impl #api_st {
             fn #path_fn() -> #path_st {
                 #path_st

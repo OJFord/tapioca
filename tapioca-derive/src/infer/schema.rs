@@ -6,6 +6,7 @@ use infer::TokensResult;
 
 pub(super) fn infer_v3(api_st: &Ident, schema: &Yaml) -> TokensResult {
     let mut tokens = quote! {
+        #[allow(plugin_as_library)]
         extern crate tapioca;
         use tapioca::*;
     };
