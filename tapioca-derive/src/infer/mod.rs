@@ -4,6 +4,7 @@ use ::syn::Ident;
 use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 
+mod method;
 mod path;
 mod schema;
 

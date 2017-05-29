@@ -2,6 +2,7 @@ use ::inflector::Inflector;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::method;
 use infer::TokensResult;
 
 fn struct_ident(api_st: &Ident, path: &str) -> Ident {
@@ -16,7 +17,7 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
     let path_st = struct_ident(api_st, path);
     let path_fn = fn_ident(path);
 
-    let tokens = quote! {
+    let mut tokens = quote! {
         struct #path_st;
 
         impl #api_st {
@@ -24,13 +25,11 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
                 #path_st
             }
         }
-
-        impl Schema for #path_st {
-            fn get(&self) {
-                panic!("Not implemented!")
-            }
-        }
     };
 
+    for (method, method_schema) in schema.as_hash().expect("Path must be a map.") {
+        let method = method.as_str().expect("Method must be a string.");
+        tokens.append(method::infer_v3(&path_st, &method, &method_schema)?);
+    }
     Ok(tokens)
 }
