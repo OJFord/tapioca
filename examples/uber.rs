@@ -9,5 +9,5 @@ extern crate tapioca_derive;
 struct UberAPI;
 
 fn main() {
-    UberAPI::resource().get()
+    UberAPI::products().get()
 }
