@@ -32,8 +32,14 @@ pub(super) fn infer_v3(api_st: &Ident, path: &str, schema: &Yaml) -> TokensResul
         #[allow(dead_code)]
         impl #api_st {
             fn #path_fn() -> #path_st {
-                #path_st
+                #path_st {}
             }
+        }
+
+        #[allow(dead_code)]
+        impl #path_st {
+            const API_URL: &'static &'static str = &#api_st::API_URL;
+            const API_URI: &'static str = #path;
         }
 
         #method_impls

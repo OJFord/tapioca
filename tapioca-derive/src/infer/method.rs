@@ -39,7 +39,7 @@ pub(super) fn infer_v3(path_st: &Ident, method: &str, schema: &Yaml) -> TokensRe
     let method_fn = fn_ident(&method);
     let query_param_st = query_param_struct_ident(&path_st, &method);
 
-    let query_params: Vec<Tokens>;
+    let query_params: Vec<(Tokens, Tokens)>;
     if let Some(parameters) = schema["parameters"].as_vec() {
         query_params = parameters.iter()
             .filter(|p| p["in"] == Yaml::from_str("query"))
@@ -49,20 +49,41 @@ pub(super) fn infer_v3(path_st: &Ident, method: &str, schema: &Yaml) -> TokensRe
         query_params = Vec::new();
     }
 
+    let (qp_st_fields, qp_types): (Vec<Tokens>, Vec<Tokens>) = (
+        query_params.iter().cloned().map(|(p, _)| p).collect(),
+        query_params.iter().cloned().map(|(_, t)| t).collect(),
+    );
+    let qp_strings: Vec<Tokens> = qp_st_fields.iter().cloned()
+        .map(|p| quote!{ "#p" }).collect();
+    let qp_st_accessors = qp_st_fields.clone();
+
+
     Ok(quote! {
         #[allow(dead_code)]
         struct #query_param_st {
-            #(#query_params),*
+            #(#qp_st_fields: #qp_types),*
         }
 
         #[allow(dead_code)]
         #[allow(unused_variables)]
-        impl #method_tr for #path_st {
+        impl tapioca::traits::#method_tr for #path_st {
             type QueryParams = #query_param_st;
             type Response = ();
 
-            fn #method_fn(&self, query_parameters: Self::QueryParams) {
-                panic!("Not implemented!")
+            fn #method_fn(&self, query_parameters: Self::QueryParams) -> Self::Response {
+                let mut url = tapioca::Url::parse(*Self::API_URL)
+                    .expect("Malformed server URL or path.");
+                url.set_path(Self::API_URI);
+                url.query_pairs_mut()
+                    .clear()
+                    #(.append_pair(
+                        #qp_strings,
+                        query_parameters.#qp_st_accessors.to_string().as_str()
+                    ))*
+                    ;
+
+                let client = tapioca::Client::new().unwrap();
+                client.#method_fn(url).send();
             }
         }
     })

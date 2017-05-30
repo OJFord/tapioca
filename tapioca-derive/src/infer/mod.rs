@@ -12,6 +12,7 @@ mod schema;
 const SCHEMA_VERSION_KEY: &'static str = "openapi";
 
 type TokensResult = Result<Tokens, Box<Error + Send + Sync>>;
+type TwoTokensResult = Result<(Tokens, Tokens), Box<Error + Send + Sync>>;
 
 pub(super) fn infer_schema(name: &Ident, schema: &Yaml) -> TokensResult {
     match schema[SCHEMA_VERSION_KEY].as_str() {

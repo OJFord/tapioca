@@ -3,6 +3,7 @@ use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
 use infer::TokensResult;
+use infer::TwoTokensResult;
 
 fn ident(param: &str) -> Ident {
     Ident::new(param.to_snake_case())
@@ -48,11 +49,11 @@ fn infer_type(schema: &Yaml) -> TokensResult {
     }
 }
 
-pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
+pub(super) fn infer_v3(schema: &Yaml) -> TwoTokensResult {
     let ident = ident(schema["name"]
         .as_str().expect("Parameter name must be a string.")
     );
     let type_tt = infer_type(&schema["schema"])?;
 
-    Ok(quote!{#ident: #type_tt})
+    Ok((quote!{#ident}, quote!{#type_tt}))
 }
