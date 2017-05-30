@@ -9,6 +9,9 @@ extern crate yaml_rust;
 use proc_macro::TokenStream;
 use syn::{Lit, MetaItem};
 
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 mod parse;
 mod infer;
 
@@ -24,22 +27,25 @@ pub fn derive_schema(input: TokenStream) -> TokenStream {
         })
         .expect("Schema URL malformed or not given.");
 
-    impl_schema(ast.ident, &schema_url).parse().unwrap()
+    impl_schema(&schema_url).parse().unwrap()
 }
 
-fn impl_schema(ident: syn::Ident, schema_url: &str) -> quote::Tokens {
-    let schema_name = ident.as_ref();
-    let schema = match parse::parse_schema(schema_name) {
+fn impl_schema(schema_url: &str) -> quote::Tokens {
+    let mut url_hasher = DefaultHasher::new();
+    schema_url.hash(&mut url_hasher);
+
+    let schema_fname = format!("{}.yml", url_hasher.finish());
+    let schema = match parse::parse_schema(&schema_fname) {
         Ok(s) => s,
         Err(_) => {
-            match parse::fetch_schema(schema_name, schema_url) {
+            match parse::fetch_schema(&schema_fname, &schema_url) {
                 Ok(s) => s,
-                Err(e) => panic!("{} schema not found: {}", ident, e.description()),
+                Err(e) => panic!("Unable to find schema: {}", e.description()),
             }
         }
     };
 
-    match infer::infer_schema(&ident, &schema) {
+    match infer::infer_schema(&schema) {
         Ok(tokens) => tokens,
         Err(error) => panic!("Failed to infer schema: {}", error),
     }

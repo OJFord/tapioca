@@ -3,16 +3,17 @@
 #![plugin(tapioca)]
 
 #[macro_use]
-extern crate tapioca_derive;
+extern crate tapioca;
 
-#[derive(Schema)]
-#[SchemaURL = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/OpenAPI.next/examples/v3.0/uber.yaml"]
-struct UberAPI;
+infer_api!(uber, "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/OpenAPI.next/examples/v3.0/uber.yaml");
 
 fn main() {
-    let latlong = UberAPIProductGetQueryParams{
+    use uber::products;
+
+    let query_params = products::GetQueryParams {
         latitude: 10.3,
         longitude: 237.8,
     };
-    UberAPI::products().get(latlong);
+
+    products::get(&query_params);
 }

@@ -9,6 +9,7 @@ path = "src/lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
+reqwest = "0.6"
 tapioca-derive = {path="tapioca-derive"}
 
 [dependencies.tapioca_mir_plugin]

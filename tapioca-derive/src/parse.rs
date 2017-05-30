@@ -7,30 +7,30 @@ use ::yaml_rust::{Yaml, YamlLoader};
 type Schema = Yaml;
 type SchemaResult = Result<Schema, Box<Error + Send + Sync>>;
 
-fn local_copy_location(schema_name: &str) -> String {
+fn local_copy_location(schema_fname: &String) -> String {
     fs::create_dir_all("tapioca-schemata");
-    format!("tapioca-schemata/{}.yml", schema_name)
+    format!("tapioca-schemata/{}.yml", schema_fname)
 }
 
-fn parse_first_doc(name: &str, buf: &str) -> SchemaResult {
+fn parse_first_doc(buf: &str) -> SchemaResult {
     let docs = YamlLoader::load_from_str(buf.as_ref())?;
     if docs.len() == 0 {
-        Err(From::from(format!("Could not parse YAML for {}", name)))
+        Err(From::from("Could not parse YAML."))
     } else {
         Ok(docs[0].clone())
     }
 }
 
-pub(super) fn parse_schema(schema_name: &str) -> SchemaResult {
-    let mut file = fs::File::open(local_copy_location(schema_name))?;
+pub(super) fn parse_schema(schema_fname: &String) -> SchemaResult {
+    let mut file = fs::File::open(local_copy_location(&schema_fname))?;
     let mut buf = String::new();
 
     file.read_to_string(&mut buf)?;
-    parse_first_doc(&schema_name, &buf)
+    parse_first_doc(&buf)
 }
 
-pub(super) fn fetch_schema(schema_name: &str, schema_url: &str) -> SchemaResult {
-    let mut file = fs::File::create(local_copy_location(schema_name))?;
+pub(super) fn fetch_schema(schema_fname: &String, schema_url: &str) -> SchemaResult {
+    let mut file = fs::File::create(local_copy_location(&schema_fname))?;
     let mut buf = String::new();
 
     let mut resp = reqwest::get(schema_url)?;
@@ -38,7 +38,7 @@ pub(super) fn fetch_schema(schema_name: &str, schema_url: &str) -> SchemaResult 
         resp.read_to_string(&mut buf);
         file.write_all(buf.as_ref())?;
 
-        parse_first_doc(&schema_name, &buf)
+        parse_first_doc(&buf)
     } else {
         Err(From::from(format!("Failed to fetch schema: {}", resp.status())))
     }
