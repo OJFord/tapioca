@@ -1,5 +1,4 @@
 use ::quote::Tokens;
-use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
 use infer::path;

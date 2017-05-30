@@ -1,6 +1,4 @@
 use std::error::Error;
-use ::inflector::Inflector;
-use ::syn::Ident;
 use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 

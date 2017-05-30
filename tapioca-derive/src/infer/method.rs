@@ -50,7 +50,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         let query_param_accessors: Vec<Tokens> = query_param_fields.iter().cloned()
             .map(|f| quote!{ query_parameters.#f }).collect();
         let query_param_strings: Vec<Tokens> = query_param_fields.iter().cloned()
-            .map(|p| quote!{ "#p" }).collect();
+            .map(|_p| quote!{ "#_p" }).collect();
 
         query_param_st = quote! {
             #[allow(dead_code)]
@@ -83,7 +83,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             #query_param_setter_bb
 
             let client = tapioca::Client::new().unwrap();
-            client.#method_fn(url).send();
+            client.#method_fn(url).send().unwrap();
         }
     })
 }

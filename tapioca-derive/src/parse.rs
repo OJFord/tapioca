@@ -8,7 +8,7 @@ type Schema = Yaml;
 type SchemaResult = Result<Schema, Box<Error + Send + Sync>>;
 
 fn local_copy_location(schema_fname: &String) -> String {
-    fs::create_dir_all("tapioca-schemata");
+    fs::create_dir_all("tapioca-schemata").unwrap();
     format!("tapioca-schemata/{}.yml", schema_fname)
 }
 
@@ -35,7 +35,7 @@ pub(super) fn fetch_schema(schema_fname: &String, schema_url: &str) -> SchemaRes
 
     let mut resp = reqwest::get(schema_url)?;
     if resp.status().is_success() {
-        resp.read_to_string(&mut buf);
+        resp.read_to_string(&mut buf)?;
         file.write_all(buf.as_ref())?;
 
         parse_first_doc(&buf)
