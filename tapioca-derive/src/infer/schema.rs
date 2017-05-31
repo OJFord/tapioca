@@ -1,6 +1,8 @@
 use ::quote::Tokens;
+use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::parameter;
 use infer::path;
 use infer::TokensResult;
 
@@ -17,7 +19,32 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let api_url = schema["servers"][0]["url"].as_str()
         .expect("Must have at least one server URL.");
 
-    let schema_ref_struct_defs: Vec<Tokens> = Vec::new();
+    let mut schema_ref_struct_defs: Vec<Tokens> = Vec::new();
+    for (schema_ref, schema) in schema["components"]["schemas"].as_hash()
+        .expect("#/components/schemas must be a map.")
+    {
+        let schema_ref_name = schema_ref.as_str()
+            .expect("$ref name must be a string.");
+        let ident = Ident::new(schema_ref_name);
+        let mut fields: Vec<Tokens> = Vec::new();
+
+        for (field_name, schema) in schema["properties"].as_hash()
+            .expect("Properties must be a map.")
+        {
+            let field_name = field_name.as_str()
+                .expect("Property must be a string.");
+            let field_ident = Ident::new(field_name);
+            let field_type = parameter::infer_type(&schema)?;
+
+            fields.push(quote!{ #field_ident: #field_type });
+        }
+
+        schema_ref_struct_defs.push(quote! {
+            struct #ident {
+                #(#fields),*
+            }
+        });
+    }
 
     Ok(quote! {
         #[macro_use]
