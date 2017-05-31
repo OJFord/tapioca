@@ -21,7 +21,7 @@ impl Response for ResponseResult {
 
         match *maybe_response {
             Some(_) => {
-                if error {
+                if !error {
                     Ok(<OkResponse as Response>::from(maybe_response))
                 } else {
                     Err(<ErrResponse as Response>::from(maybe_response))

@@ -15,7 +15,7 @@ fn parse_response_key(key: &Yaml) -> (u16, String) {
 }
 
 pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensResult {
-    let (ref error_en, ref success_en) = *enum_idents;
+    let (ref success_en, ref error_en) = *enum_idents;
     let mut error_variants: Vec<Ident> = Vec::new();
     let mut error_models: Vec<Tokens> = Vec::new();
     let mut success_variants: Vec<Ident> = Vec::new();
