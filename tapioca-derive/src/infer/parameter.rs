@@ -102,18 +102,18 @@ pub(crate) fn infer_type(schema: &Yaml) -> TypeAndNecessaryImpl {
 
             Some("integer") => {
                 match schema["format"].as_str() {
-                    None => Err(From::from("Parameter schema format must be a string.")),
+                    None
+                        | Some("int64") => Ok((quote!{i64}, None)),
                     Some("int32") => Ok((quote!{i32}, None)),
-                    Some("int64") => Ok((quote!{i64}, None)),
                     Some(_) => Err(From::from("Invalid format for `integer` type.")),
                 }
             },
 
             Some("number") => {
                 match schema["format"].as_str() {
-                    None => Err(From::from("Parameter schema format must be a string.")),
+                    None
+                        | Some("double") => Ok((quote!{f64}, None)),
                     Some("float") => Ok((quote!{f32}, None)),
-                    Some("double") => Ok((quote!{f64}, None)),
                     Some(_) => Err(From::from("Invalid format for `number` type.")),
                 }
             },
