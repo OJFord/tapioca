@@ -54,7 +54,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         schema_ref_struct_defs.push(quote! {
             #(#additional_types)*
 
-            struct #ident {
+            #[derive(Deserialize)]
+            pub struct #ident {
                 #(#fields),*
             }
         });
