@@ -69,6 +69,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         use tapioca::serde::json as serde_json;
 
         mod schema_ref {
+            use super::schema_ref;
+
             #(#schema_ref_struct_defs)*
         }
 
