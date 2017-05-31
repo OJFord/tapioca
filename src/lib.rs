@@ -18,6 +18,8 @@ pub mod serde {
     pub use ::serde_derive as derive;
 }
 
+pub mod datatype;
+
 mod response;
 pub use response::{Response, ResponseResult};
 

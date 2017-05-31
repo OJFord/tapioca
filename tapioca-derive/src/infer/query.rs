@@ -25,9 +25,17 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
         let name = param_schema["name"].as_str()
             .expect("Parameter name must be a string.");
         let field = ident(name);
+        let (param_type, _) = datatype::infer_v3(&param_schema["schema"])?;
+        let mandate: Tokens;
+
+        if let Some(true) = schema["required"].as_bool() {
+            mandate = quote!(tapioca::datatype::Required);
+        } else {
+            mandate = quote!(tapioca::datatype::Optional);
+        }
 
         idents.push(ident(name));
-        types.push(datatype::infer_v3(&param_schema["schema"])?.0);
+        types.push(quote!{ #mandate<#param_type> });
         name_strs.push(quote!{ #name });
         accessors.push(quote!{ query_parameters.#field });
     }
@@ -45,7 +53,7 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
                 .clear()
                 #(.append_pair(
                     #name_strs,
-                    #accessors.to_string().as_str()
+                    #accessors.unwrap_or("").to_string().as_str()
                 ))*
                 ;
         }
