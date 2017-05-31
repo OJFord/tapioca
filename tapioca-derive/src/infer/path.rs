@@ -22,7 +22,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
 
     Ok(quote! {
         pub(super) mod #path_mod {
-            use super::tapioca;
+            use ::tapioca;
 
             use super::schema_ref;
             use super::API_URL;
