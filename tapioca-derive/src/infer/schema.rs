@@ -62,12 +62,6 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     }
 
     Ok(quote! {
-        #[macro_use]
-        extern crate serde_derive;
-
-        use tapioca::serde as serde;
-        use tapioca::serde::json as serde_json;
-
         mod schema_ref {
             use super::schema_ref;
 

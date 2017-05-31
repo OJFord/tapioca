@@ -29,6 +29,11 @@ macro_rules! infer_api {
     ($name:ident, $url:expr) => {
         #[macro_use]
         extern crate tapioca_derive;
+        #[macro_use]
+        extern crate serde_derive;
+
+        use tapioca::serde as serde;
+        use tapioca::serde::json as serde_json;
 
         mod $name {
             #[derive(Schema)]
