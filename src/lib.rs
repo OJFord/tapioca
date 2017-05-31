@@ -3,12 +3,20 @@
 
 extern crate reqwest;
 extern crate rustc_plugin;
-extern crate serde;
+#[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
 extern crate syntax;
 
 pub use reqwest::{Client, Url};
+
+pub mod serde {
+    extern crate serde;
+    extern crate serde_json;
+
+    pub use self::serde::*;
+    pub use self::serde_json as json;
+    pub use ::serde_derive as derive;
+}
 
 mod response;
 pub use response::{Response, ResponseResult};

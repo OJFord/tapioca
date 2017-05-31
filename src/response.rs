@@ -1,7 +1,7 @@
 pub use ::reqwest::StatusCode;
 
-type Body = ::serde_json::Value;
 pub type ResponseResult = Result<OkResponse, ErrResponse>;
+type Body = ::serde::json::Value;
 type ReqwestResponse = ::reqwest::Response;
 
 pub trait Response {
@@ -124,7 +124,7 @@ impl Response for ErrResponse {
 fn deser_body(response: &mut Option<&mut ::reqwest::Response>) -> Body {
     match *response {
         Some(ref mut r) => r.json().expect("Malformed JSON response."),
-        None => ::serde_json::Value::Null,
+        None => ::serde::json::Value::Null,
     }
 }
 

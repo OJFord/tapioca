@@ -21,13 +21,12 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
 
     Ok(quote! {
         #[macro_use]
-        use tapioca::serde_derive;
-
+        extern crate serde_derive;
         #[allow(plugin_as_library)]
         extern crate tapioca;
 
-        use tapioca::serde;
-        use tapioca::serde_json;
+        use tapioca::serde as serde;
+        use tapioca::serde::json as serde_json;
 
         mod schema_ref {
             #(#schema_ref_struct_defs)*
