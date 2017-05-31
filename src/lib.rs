@@ -3,9 +3,15 @@
 
 extern crate reqwest;
 extern crate rustc_plugin;
+extern crate serde;
+extern crate serde_derive;
+extern crate serde_json;
 extern crate syntax;
 
 pub use reqwest::{Client, Url};
+
+mod response;
+pub use response::{Response, ResponseResult};
 
 use rustc_plugin::Registry;
 use syntax::feature_gate::AttributeType;

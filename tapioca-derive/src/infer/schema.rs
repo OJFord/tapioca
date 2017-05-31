@@ -13,12 +13,25 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             path.as_str().expect("Path must be a string."), &path_schema
         ).unwrap())
         .collect();
+
     let api_url = schema["servers"][0]["url"].as_str()
         .expect("Must have at least one server URL.");
 
+    let schema_ref_struct_defs: Vec<Tokens> = Vec::new();
+
     Ok(quote! {
+        #[macro_use]
+        use tapioca::serde_derive;
+
         #[allow(plugin_as_library)]
         extern crate tapioca;
+
+        use tapioca::serde;
+        use tapioca::serde_json;
+
+        mod schema_ref {
+            #(#schema_ref_struct_defs)*
+        }
 
         const API_URL: &'static str = #api_url;
 

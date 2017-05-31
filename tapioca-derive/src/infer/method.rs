@@ -4,6 +4,7 @@ use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
 use infer::parameter;
+use infer::response;
 use infer::TokensResult;
 
 const METHODS: &'static [&'static str] = &[
@@ -27,6 +28,14 @@ fn fn_ident(method: &str) -> Ident {
 fn query_param_struct_ident(method: &str) -> Ident {
     assert!(valid(method), "Invalid method: {}", method);
     Ident::new(format!("{}QueryParams", method.to_class_case()))
+}
+
+fn response_struct_idents(method: &str) -> (Ident, Ident) {
+    assert!(valid(method), "Invalid method: {}", method);
+    (
+        Ident::new(format!("{}OkResponse", method.to_class_case())),
+        Ident::new(format!("{}ErrResponse", method.to_class_case())),
+    )
 }
 
 pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
@@ -55,13 +64,15 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         }
     }
 
-    Ok(quote! {
-        type Response = ();
+    structs.push(
+        response::infer_v3(&response_struct_idents(&method), &schema["responses"])?
+    );
 
+    Ok(quote! {
         #(#structs)*
 
         #[allow(dead_code)]
-        pub(in super::super) fn #method_fn<#(#bounds),*>(#(#args),*) -> Response {
+        pub fn #method_fn<#(#bounds),*>(#(#args),*) -> tapioca::ResponseResult {
             let mut url = tapioca::Url::parse(self::API_URL)
                 .expect("Malformed server URL or path.");
             url.set_path(self::API_PATH);
@@ -69,7 +80,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             #(#transformations)*
 
             let client = tapioca::Client::new().unwrap();
-            client.#method_fn(url).send().unwrap();
+            let response = &mut client.#method_fn(url).send().as_mut().ok();
+            <tapioca::ResponseResult as tapioca::Response>::from(response)
         }
     })
 }

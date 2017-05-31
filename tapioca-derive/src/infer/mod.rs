@@ -5,15 +5,12 @@ use ::yaml_rust::Yaml;
 mod method;
 mod parameter;
 mod path;
+mod response;
 mod schema;
 
 const SCHEMA_VERSION_KEY: &'static str = "openapi";
 
 type TokensResult = Result<Tokens, Box<Error + Send + Sync>>;
-type FourTokensResult = Result<
-    (Tokens, Tokens, Tokens, Tokens),
-    Box<Error + Send + Sync>
->;
 
 pub(super) fn infer_schema(schema: &Yaml) -> TokensResult {
     match schema[SCHEMA_VERSION_KEY].as_str() {
