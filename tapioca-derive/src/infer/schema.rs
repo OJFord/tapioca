@@ -8,19 +8,28 @@ use infer::TokensResult;
 
 type FieldsAndSupportingTypes = (Vec<Tokens>, Vec<Tokens>);
 
-fn infer_ref(schema: &Yaml) -> FieldsAndSupportingTypes {
+fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
     let mut fields: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
 
-    for (field_name, schema) in schema["properties"].as_hash()
+    for (field, schema) in schema["properties"].as_hash()
         .expect("Properties must be a map.")
     {
-        let field_name = field_name.as_str()
+        let field_name = field.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
         let (field_type, additional_type) = datatype::infer_v3(&schema).unwrap();
+        let mandate: Tokens;
 
-        fields.push(quote!{ #field_ident: #field_type });
+        if let Some(true) = schema["required"].as_bool() {
+            mandate = quote!(tapioca::datatype::Required);
+        } else if required.contains(field) {
+            mandate = quote!(tapioca::datatype::Required);
+        } else {
+            mandate = quote!(tapioca::datatype::Optional);
+        }
+
+        fields.push(quote!{ #field_ident: #mandate<#field_type> });
         if let Some(additional_type) = additional_type {
             additional_types.push(additional_type);
         }
@@ -49,7 +58,10 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         let schema_ref_name = schema_ref.as_str()
             .expect("$ref name must be a string.");
         let ident = Ident::new(schema_ref_name);
-        let (fields, additional_types) = infer_ref(schema);
+        let (fields, additional_types) = infer_ref(
+            schema,
+            schema["required"].as_vec().unwrap_or(&Vec::new())
+        );
 
         schema_ref_struct_defs.push(quote! {
             #(#additional_types)*
