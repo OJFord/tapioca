@@ -3,7 +3,6 @@
 #![plugin(tapioca)]
 
 #[macro_use]
-#[allow(plugin_as_library)]
 extern crate tapioca;
 
 infer_api!(uber, "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/OpenAPI.next/examples/v3.0/uber.yaml");
