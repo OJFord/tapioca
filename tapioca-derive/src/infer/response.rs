@@ -46,7 +46,10 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
     }
 
     Ok(quote! {
-        #(#additional_types)*
+        #(
+            #[derive(Deserialize)]
+            #additional_types
+        )*
 
         #[derive(Deserialize)]
         enum #error_en {
