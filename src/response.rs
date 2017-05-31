@@ -60,14 +60,12 @@ struct OkResponse {
 
 impl Response for OkResponse {
     fn from(mut maybe_response: &mut Option<&mut ReqwestResponse>) -> Self {
-        let status_code: StatusCode;
+        let status_code = match *maybe_response {
+            Some(ref response) => deser_status(&Some(response)),
+            None => panic!("OkResponse requires Some response."),
+        };
 
-        if let Some(ref response) = *maybe_response {
-            status_code = *response.status();
-            assert!(is_ok(&status_code));
-        } else {
-            panic!("OkResponse requires Some response.")
-        }
+        assert!(is_ok(&status_code));
 
         Self {
             body: deser_body(&mut maybe_response),
