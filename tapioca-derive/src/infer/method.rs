@@ -3,7 +3,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
-use infer::parameter;
+use infer::query;
 use infer::response;
 use infer::TokensResult;
 
@@ -53,7 +53,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             .filter(|p| p["in"] == Yaml::from_str("query")).collect();
 
         if query_parameters.len() > 0 {
-            let (s, b, a, t) = parameter::infer_v3(
+            let (s, b, a, t) = query::infer_v3(
                 &query_param_struct_ident(&method),
                 &Yaml::Array(query_parameters)
             )?;

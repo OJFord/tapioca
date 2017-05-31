@@ -2,8 +2,9 @@ use std::error::Error;
 use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 
+mod datatype;
 mod method;
-mod parameter;
+mod query;
 mod path;
 mod response;
 mod schema;

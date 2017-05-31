@@ -2,7 +2,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
-use infer::parameter;
+use infer::datatype;
 use infer::TokensResult;
 
 const UNKNOWN_ERR_CODE: u16 = 520;
@@ -30,7 +30,7 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
 
         let (status_code, status_str) = parse_response_key(&code);
         let variant_ident = Ident::new(status_str);
-        let (inferred_type, additional_type) = parameter::infer_type(&schema)?;
+        let (inferred_type, additional_type) = datatype::infer_v3(&schema)?;
 
         if let Some(t) = additional_type {
             additional_types.push(t);

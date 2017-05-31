@@ -2,7 +2,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
-use infer::parameter;
+use infer::datatype;
 use infer::path;
 use infer::TokensResult;
 
@@ -18,7 +18,7 @@ fn infer_ref(schema: &Yaml) -> FieldsAndSupportingTypes {
         let field_name = field_name.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
-        let (field_type, additional_type) = parameter::infer_type(&schema).unwrap();
+        let (field_type, additional_type) = datatype::infer_v3(&schema).unwrap();
 
         fields.push(quote!{ #field_ident: #field_type });
         if let Some(additional_type) = additional_type {

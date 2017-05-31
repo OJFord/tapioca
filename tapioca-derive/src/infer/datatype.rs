@@ -7,20 +7,12 @@ use ::yaml_rust::Yaml;
 
 use infer::Error;
 
-type StructBoundArgImpl = Result<
-    (Tokens, Tokens, Tokens, Tokens),
-    Box<Error + Send + Sync>
->;
 type TypeAndNecessaryImpl = Result<
     (Tokens, Option<Tokens>),
     Box<Error + Send + Sync>
 >;
 
-fn ident(param: &str) -> Ident {
-    Ident::new(param.to_snake_case())
-}
-
-pub(crate) fn infer_type(schema: &Yaml) -> TypeAndNecessaryImpl {
+pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
     if let Some(schema_ref) = schema["$ref"].as_str() {
         let ref_name = schema_ref.rsplit('/')
             .next().expect("Malformed $ref")
@@ -33,7 +25,7 @@ pub(crate) fn infer_type(schema: &Yaml) -> TypeAndNecessaryImpl {
             None => Err(From::from("Parameter schema type must be a string.")),
 
             Some("array") => {
-                let (item_type, supp_types) = infer_type(&schema["items"])?;
+                let (item_type, supp_types) = infer_v3(&schema["items"])?;
 
                 if let Some(supp_types) = supp_types {
                     Ok((quote!{ Vec<#item_type> }, Some(quote!{ #supp_types })))
@@ -61,7 +53,7 @@ pub(crate) fn infer_type(schema: &Yaml) -> TypeAndNecessaryImpl {
                         .expect("Property keys must be strings.");
 
                     let rusty_ident = Ident::new(name.to_snake_case());
-                    let (field_type, supp_types) = infer_type(&schema)?;
+                    let (field_type, supp_types) = infer_v3(&schema)?;
 
                     if let Some(supp_types) = supp_types {
                         additional_types.push(supp_types);
@@ -140,41 +132,4 @@ pub(crate) fn infer_type(schema: &Yaml) -> TypeAndNecessaryImpl {
             Some(ptype) => Err(From::from(format!("Parameter type `{}` invalid", ptype))),
         }
     }
-}
-
-pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImpl {
-    let mut idents: Vec<Ident> = Vec::new();
-    let mut types: Vec<Tokens> = Vec::new();
-    let mut name_strs: Vec<Tokens> = Vec::new();
-    let mut accessors: Vec<Tokens> = Vec::new();
-
-    for param_schema in schema.as_vec().unwrap() {
-        let name = param_schema["name"].as_str()
-            .expect("Parameter name must be a string.");
-        let field = ident(name);
-
-        idents.push(ident(name));
-        types.push(infer_type(&param_schema["schema"])?.0);
-        name_strs.push(quote!{ #name });
-        accessors.push(quote!{ query_parameters.#field });
-    }
-
-    Ok((
-        quote! {
-            pub struct #struct_ident {
-                #(pub #idents: #types),*
-            }
-        },
-        quote! {},
-        quote! { query_parameters: &#struct_ident },
-        quote! {
-            url.query_pairs_mut()
-                .clear()
-                #(.append_pair(
-                    #name_strs,
-                    #accessors.to_string().as_str()
-                ))*
-                ;
-        }
-    ))
 }
