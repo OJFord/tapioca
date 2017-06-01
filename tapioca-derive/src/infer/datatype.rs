@@ -113,10 +113,10 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
             Some("string") => {
                 match schema["format"].as_str() {
                     None => Ok((quote!{String}, None)),
-                    Some("byte") => Ok((quote!{tapioca::Base64}, None)),
+                    Some("byte") => Ok((quote!{::tapioca::Base64}, None)),
                     Some("binary") => Ok((quote!{&[u8]}, None)),
-                    Some("date") => Ok((quote!{tapioca::Date}, None)),
-                    Some("date-time") => Ok((quote!{tapioca::DateTime}, None)),
+                    Some("date") => Ok((quote!{::tapioca::Date}, None)),
+                    Some("date-time") => Ok((quote!{::tapioca::DateTime}, None)),
                     Some("password") => Ok((quote!{String}, None)),
                     Some(_) => Ok((quote!{String}, None)),
                 }

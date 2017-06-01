@@ -22,11 +22,11 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
-            mandate = quote!(tapioca::datatype::Required);
+            mandate = quote!(::tapioca::datatype::Required);
         } else if required.contains(field) {
-            mandate = quote!(tapioca::datatype::Required);
+            mandate = quote!(::tapioca::datatype::Required);
         } else {
-            mandate = quote!(tapioca::datatype::Optional);
+            mandate = quote!(::tapioca::datatype::Optional);
         }
 
         fields.push(quote!{ #field_ident: #mandate<#field_type> });

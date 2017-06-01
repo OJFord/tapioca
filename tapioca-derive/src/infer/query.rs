@@ -29,10 +29,10 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
-            mandate = quote!(tapioca::datatype::Required);
+            mandate = quote!(::tapioca::datatype::Required);
             accessors.push(quote!{ query_parameters.#field.to_string() });
         } else {
-            mandate = quote!(tapioca::datatype::Optional);
+            mandate = quote!(::tapioca::datatype::Optional);
             accessors.push(quote!{
                 query_parameters.#field
                     .map(|p| p.to_string())
