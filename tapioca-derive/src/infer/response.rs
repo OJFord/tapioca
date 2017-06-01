@@ -16,14 +16,14 @@ fn parse_response_key(key: &Yaml) -> (u16, String) {
 
 pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensResult {
     let (ref success_en, ref error_en) = *enum_idents;
+    let borrow = quote!(#[serde(borrow)]);
+
     let mut error_variants: Vec<Ident> = Vec::new();
     let mut error_models: Vec<Tokens> = Vec::new();
-    let mut error_st_lifetime = quote!();
-    let mut error_borrows: Vec<Tokens> = Vec::new();
+    let mut error_lifetime = quote!();
     let mut success_variants: Vec<Ident> = Vec::new();
     let mut success_models: Vec<Tokens> = Vec::new();
-    let mut success_st_lifetime = quote!();
-    let mut success_borrows: Vec<Tokens> = Vec::new();
+    let mut success_lifetime = quote!();
     let mut additional_types: Vec<Tokens> = Vec::new();
 
     for (code, schema) in schema.as_hash()
@@ -42,23 +42,21 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
 
         if status_code < 400 {
             success_variants.push(variant_ident);
-            success_models.push(inferred_type);
 
             if has_lifetime {
-                success_st_lifetime = quote!('a);
-                success_borrows.push(quote!{ #[serde(borrow)] });
+                success_lifetime = quote!('a);
+                success_models.push(quote!{ #borrow #inferred_type });
             } else {
-                success_borrows.push(quote!());
+                success_models.push(inferred_type);
             }
         } else {
             error_variants.push(variant_ident);
-            error_models.push(inferred_type);
 
             if has_lifetime {
-                error_st_lifetime = quote!('a);
-                error_borrows.push(quote!{ #[serde(borrow)] });
+                error_lifetime = quote!('a);
+                error_models.push(quote!{ #borrow #inferred_type });
             } else {
-                error_borrows.push(quote!());
+                error_models.push(inferred_type);
             }
         }
     }
@@ -70,13 +68,13 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
         )*
 
         #[derive(Deserialize)]
-        enum #error_en<#error_st_lifetime> {
-            #(#error_variants(#error_borrows #error_models)),*
+        enum #error_en<#error_lifetime> {
+            #(#error_variants(#error_models)),*
         }
 
         #[derive(Deserialize)]
-        enum #success_en<#success_st_lifetime> {
-            #(#success_variants(#success_borrows #success_models)),*
+        enum #success_en<#success_lifetime> {
+            #(#success_variants(#success_models)),*
         }
     })
 }
