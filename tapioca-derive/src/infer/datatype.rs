@@ -8,7 +8,7 @@ use ::yaml_rust::Yaml;
 use infer::Error;
 
 type TypeAndNecessaryImpl = Result<
-    (Tokens, Option<Tokens>),
+    (Tokens, bool, Option<Tokens>),
     Box<Error + Send + Sync>
 >;
 
@@ -19,19 +19,14 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
             .to_class_case();
         let ident = Ident::new(ref_name);
 
-        Ok((quote!{ schema_ref::#ident }, None))
+        Ok((quote!{ schema_ref::#ident }, false, None))
     } else {
         match schema["type"].as_str() {
             None => Err(From::from("Parameter schema type must be a string.")),
 
             Some("array") => {
-                let (item_type, supp_types) = infer_v3(&schema["items"])?;
-
-                if let Some(supp_types) = supp_types {
-                    Ok((quote!{ Vec<#item_type> }, Some(quote!{ #supp_types })))
-                } else {
-                    Ok((quote!{ Vec<#item_type> }, None))
-                }
+                let (item_type, has_lifetime, supp_types) = infer_v3(&schema["items"])?;
+                Ok((quote!{ Vec<#item_type> }, has_lifetime, supp_types))
             },
 
             Some("object") => {
@@ -45,6 +40,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
                         .collect(),
                     None => Vec::new(),
                 };
+                let mut lifetime = quote!();
 
                 for (name, schema) in schema["properties"].as_hash()
                     .expect("Properties must be a map.")
@@ -53,7 +49,11 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
                         .expect("Property keys must be strings.");
 
                     let rusty_ident = Ident::new(name.to_snake_case());
-                    let (field_type, supp_types) = infer_v3(&schema)?;
+                    let (field_type, has_lifetime, supp_types) = infer_v3(&schema)?;
+
+                    if has_lifetime {
+                        lifetime = quote!('a);
+                    }
 
                     if let Some(supp_types) = supp_types {
                         additional_types.push(supp_types);
@@ -81,11 +81,12 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
 
                 Ok((
                     quote!{ #ident },
+                    lifetime == quote!('a),
                     Some(quote!{
                         #(#additional_types)*
 
                         #[derive(Deserialize)]
-                        struct #ident {
+                        struct #ident<#lifetime> {
                             #(#fields),*
                         }
                     })
@@ -95,8 +96,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
             Some("integer") => {
                 match schema["format"].as_str() {
                     None
-                        | Some("int64") => Ok((quote!{i64}, None)),
-                    Some("int32") => Ok((quote!{i32}, None)),
+                        | Some("int64") => Ok((quote!{i64}, false, None)),
+                    Some("int32") => Ok((quote!{i32}, false, None)),
                     Some(_) => Err(From::from("Invalid format for `integer` type.")),
                 }
             },
@@ -104,27 +105,27 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
             Some("number") => {
                 match schema["format"].as_str() {
                     None
-                        | Some("double") => Ok((quote!{f64}, None)),
-                    Some("float") => Ok((quote!{f32}, None)),
+                        | Some("double") => Ok((quote!{f64}, false, None)),
+                    Some("float") => Ok((quote!{f32}, false, None)),
                     Some(_) => Err(From::from("Invalid format for `number` type.")),
                 }
             },
 
             Some("string") => {
                 match schema["format"].as_str() {
-                    None => Ok((quote!{String}, None)),
-                    Some("byte") => Ok((quote!{::tapioca::Base64}, None)),
-                    Some("binary") => Ok((quote!{&[u8]}, None)),
-                    Some("date") => Ok((quote!{::tapioca::Date}, None)),
-                    Some("date-time") => Ok((quote!{::tapioca::DateTime}, None)),
-                    Some("password") => Ok((quote!{String}, None)),
-                    Some(_) => Ok((quote!{String}, None)),
+                    None => Ok((quote!{&'a str}, true, None)),
+                    Some("byte") => Ok((quote!{::tapioca::Base64}, false, None)),
+                    Some("binary") => Ok((quote!{&'a [u8]}, true, None)),
+                    Some("date") => Ok((quote!{::tapioca::Date}, false, None)),
+                    Some("date-time") => Ok((quote!{::tapioca::DateTime}, false, None)),
+                    Some("password") => Ok((quote!{&'a str}, true, None)),
+                    Some(_) => Ok((quote!{&'a str}, true, None)),
                 }
             },
 
             Some("boolean") => {
                 match schema["format"].as_str() {
-                    None => Ok((quote!{bool}, None)),
+                    None => Ok((quote!{bool}, false, None)),
                     Some(_) => Err(From::from("Unexpected format for `boolean` type.")),
                 }
             },

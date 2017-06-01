@@ -6,11 +6,12 @@ use infer::datatype;
 use infer::path;
 use infer::TokensResult;
 
-type FieldsAndSupportingTypes = (Vec<Tokens>, Vec<Tokens>);
+type FieldsAndSupportingTypes = (Vec<Tokens>, Tokens, Vec<Tokens>);
 
 fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
     let mut fields: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
+    let mut lifetime = quote!();
 
     for (field, schema) in schema["properties"].as_hash()
         .expect("Properties must be a map.")
@@ -18,8 +19,12 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
         let field_name = field.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
-        let (field_type, additional_type) = datatype::infer_v3(&schema).unwrap();
+        let (field_type, has_lifetime, additional_type) = datatype::infer_v3(&schema).unwrap();
         let mandate: Tokens;
+
+        if has_lifetime {
+            lifetime = quote!('a);
+        }
 
         if let Some(true) = schema["required"].as_bool() {
             mandate = quote!(::tapioca::datatype::Required);
@@ -35,7 +40,7 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
         }
     }
 
-    (fields, additional_types)
+    (fields, lifetime, additional_types)
 }
 
 pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
@@ -58,7 +63,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         let schema_ref_name = schema_ref.as_str()
             .expect("$ref name must be a string.");
         let ident = Ident::new(schema_ref_name);
-        let (fields, additional_types) = infer_ref(
+        let (fields, lifetime, additional_types) = infer_ref(
             schema,
             schema["required"].as_vec().unwrap_or(&Vec::new())
         );
@@ -67,7 +72,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             #(#additional_types)*
 
             #[derive(Deserialize)]
-            pub struct #ident {
+            pub struct #ident<#lifetime> {
                 #(#fields),*
             }
         });

@@ -21,11 +21,13 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
     let mut name_strs: Vec<Tokens> = Vec::new();
     let mut accessors: Vec<Tokens> = Vec::new();
 
+    let mut lifetime = quote!();
+
     for schema in schema.as_vec().unwrap() {
         let name = schema["name"].as_str()
             .expect("Parameter name must be a string.");
         let field = ident(name);
-        let (param_type, _) = datatype::infer_v3(&schema["schema"])?;
+        let (param_type, has_lifetime, _) = datatype::infer_v3(&schema["schema"])?;
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
@@ -40,6 +42,10 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
             });
         }
 
+        if has_lifetime {
+            lifetime = quote!('a);
+        }
+
         idents.push(ident(name));
         types.push(quote!{ #mandate<#param_type> });
         name_strs.push(quote!{ #name });
@@ -47,7 +53,7 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
 
     Ok((
         quote! {
-            pub struct #struct_ident {
+            pub struct #struct_ident<#lifetime> {
                 #(pub #idents: #types),*
             }
         },

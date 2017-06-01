@@ -80,7 +80,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             #(#transformations)*
 
             let client = tapioca::Client::new().unwrap();
-            let response = &mut client.#method_fn(url).send().as_mut().ok();
+            let mut result = client.#method_fn(url).send();
+            let response = &mut result.as_mut().ok();
             <tapioca::ResponseResult as tapioca::Response>::from(response)
         }
     })
