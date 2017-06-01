@@ -19,7 +19,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeAndNecessaryImpl {
             .to_class_case();
         let ident = Ident::new(ref_name);
 
-        Ok((quote!{ schema_ref::#ident }, false, None))
+        Ok((quote!{ schema_ref::#ident<'a> }, true, None))
     } else {
         match schema["type"].as_str() {
             None => Err(From::from("Parameter schema type must be a string.")),

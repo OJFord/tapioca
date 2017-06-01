@@ -18,8 +18,12 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
     let (ref success_en, ref error_en) = *enum_idents;
     let mut error_variants: Vec<Ident> = Vec::new();
     let mut error_models: Vec<Tokens> = Vec::new();
+    let mut error_st_lifetime = quote!();
+    let mut error_borrows: Vec<Tokens> = Vec::new();
     let mut success_variants: Vec<Ident> = Vec::new();
     let mut success_models: Vec<Tokens> = Vec::new();
+    let mut success_st_lifetime = quote!();
+    let mut success_borrows: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
 
     for (code, schema) in schema.as_hash()
@@ -30,7 +34,7 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
 
         let (status_code, status_str) = parse_response_key(&code);
         let variant_ident = Ident::new(status_str);
-        let (inferred_type, _, additional_type) = datatype::infer_v3(&schema)?;
+        let (inferred_type, has_lifetime, additional_type) = datatype::infer_v3(&schema)?;
 
         if let Some(t) = additional_type {
             additional_types.push(t);
@@ -39,9 +43,23 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
         if status_code < 400 {
             success_variants.push(variant_ident);
             success_models.push(inferred_type);
+
+            if has_lifetime {
+                success_st_lifetime = quote!('a);
+                success_borrows.push(quote!{ #[serde(borrow)] });
+            } else {
+                success_borrows.push(quote!());
+            }
         } else {
             error_variants.push(variant_ident);
             error_models.push(inferred_type);
+
+            if has_lifetime {
+                error_st_lifetime = quote!('a);
+                error_borrows.push(quote!{ #[serde(borrow)] });
+            } else {
+                error_borrows.push(quote!());
+            }
         }
     }
 
@@ -52,13 +70,13 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
         )*
 
         #[derive(Deserialize)]
-        enum #error_en {
-            #(#error_variants(#error_models)),*
+        enum #error_en<#error_st_lifetime> {
+            #(#error_variants(#error_borrows #error_models)),*
         }
 
         #[derive(Deserialize)]
-        enum #success_en {
-            #(#success_variants(#success_models)),*
+        enum #success_en<#success_st_lifetime> {
+            #(#success_variants(#success_borrows #success_models)),*
         }
     })
 }

@@ -22,10 +22,6 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
         let (field_type, has_lifetime, additional_type) = datatype::infer_v3(&schema).unwrap();
         let mandate: Tokens;
 
-        if has_lifetime {
-            lifetime = quote!('a);
-        }
-
         if let Some(true) = schema["required"].as_bool() {
             mandate = quote!(::tapioca::datatype::Required);
         } else if required.contains(field) {
@@ -34,7 +30,16 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
             mandate = quote!(::tapioca::datatype::Optional);
         }
 
-        fields.push(quote!{ #field_ident: #mandate<#field_type> });
+        if has_lifetime {
+            lifetime = quote!('a);
+            fields.push(quote!{
+                #[serde(borrow)]
+                #field_ident: #mandate<#field_type>
+            });
+        } else {
+            fields.push(quote!{ #field_ident: #mandate<#field_type> });
+        }
+
         if let Some(additional_type) = additional_type {
             additional_types.push(additional_type);
         }
