@@ -6,12 +6,12 @@ use infer::datatype;
 use infer::path;
 use infer::TokensResult;
 
-type FieldsAndSupportingTypes = (Vec<Tokens>, Tokens, Vec<Tokens>);
+type FieldsLifetimeSupport = (Vec<Tokens>, Option<Ident>, Vec<Tokens>);
 
-fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
+fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsLifetimeSupport {
     let mut fields: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
-    let mut lifetime = quote!();
+    let mut struct_lifetime: Option<Ident> = None;
 
     for (field, schema) in schema["properties"].as_hash()
         .expect("Properties must be a map.")
@@ -19,7 +19,7 @@ fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingType
         let field_name = field.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
-        let (ty, has_lt, maybe_at) = datatype::infer_v3(&schema).unwrap();
+        let (ty, lifetime, maybe_at) = datatype::infer_v3(&schema).unwrap();
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
@@ -30,8 +30,9 @@ fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingType
             mandate = quote!(::tapioca::datatype::Optional);
         }
 
-        if has_lt {
-            lifetime = quote!('a);
+        struct_lifetime = struct_lifetime.or(lifetime.clone());
+
+        if lifetime.is_some() {
             fields.push(quote!{
                 #[serde(borrow)]
                 #field_ident: #mandate<#ty>
@@ -45,7 +46,7 @@ fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingType
         }
     }
 
-    (fields, lifetime, additional_types)
+    (fields, struct_lifetime, additional_types)
 }
 
 fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult {
@@ -63,17 +64,14 @@ fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult
             })
         },
         None => {
-            let (alias_to, has_lt, additional) = match datatype::infer_v3(&schema)? {
-                (ty, has_lt, Some(additional)) => (ty, has_lt, additional),
-                (ty, has_lt, None) => (ty, has_lt, quote!{}),
-            };
-            let lifetime = match has_lt {
-                true => quote!('a),
-                false => quote!(),
+            let (alias_to, lifetime, maybe_at) = datatype::infer_v3(&schema)?;
+            let additional_type = match maybe_at {
+                Some(at) => at,
+                None => quote!(),
             };
 
             Ok(quote! {
-                #additional
+                #additional_type
 
                 pub type #ident<#lifetime> = #alias_to;
             })

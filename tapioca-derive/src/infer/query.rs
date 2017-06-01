@@ -20,15 +20,16 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
     let mut types: Vec<Tokens> = Vec::new();
     let mut name_strs: Vec<Tokens> = Vec::new();
     let mut accessors: Vec<Tokens> = Vec::new();
-
-    let mut lifetime = quote!();
+    let mut struct_lifetime: Option<Ident> = None;
 
     for schema in schema.as_vec().unwrap() {
         let name = schema["name"].as_str()
             .expect("Parameter name must be a string.");
         let field = ident(name);
-        let (param_type, has_lifetime, _) = datatype::infer_v3(&schema["schema"])?;
+        let (param_type, lifetime, _) = datatype::infer_v3(&schema["schema"])?;
         let mandate: Tokens;
+
+        struct_lifetime = struct_lifetime.or(lifetime);
 
         if let Some(true) = schema["required"].as_bool() {
             mandate = quote!(::tapioca::datatype::Required);
@@ -42,10 +43,6 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
             });
         }
 
-        if has_lifetime {
-            lifetime = quote!('a);
-        }
-
         idents.push(ident(name));
         types.push(quote!{ #mandate<#param_type> });
         name_strs.push(quote!{ #name });
@@ -53,7 +50,7 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
 
     Ok((
         quote! {
-            pub struct #struct_ident<#lifetime> {
+            pub struct #struct_ident<#struct_lifetime> {
                 #(pub #idents: #types),*
             }
         },

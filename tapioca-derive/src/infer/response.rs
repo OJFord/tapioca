@@ -20,29 +20,31 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
 
     let mut error_variants: Vec<Ident> = Vec::new();
     let mut error_models: Vec<Tokens> = Vec::new();
-    let mut error_lifetime = quote!();
+    let mut error_lifetime: Option<Ident> = None;
+
     let mut success_variants: Vec<Ident> = Vec::new();
     let mut success_models: Vec<Tokens> = Vec::new();
-    let mut success_lifetime = quote!();
+    let mut success_lifetime: Option<Ident> = None;
+
     let mut additional_types: Vec<Tokens> = Vec::new();
 
     for (code, schema) in schema.as_hash().expect("Responses must be a map.") {
         let (status_code, status_str) = parse_response_key(&code);
         let variant_ident = Ident::new(status_str);
 
-        let mut inferred_type: Tokens;
-        let mut has_lifetime: bool;
-        let mut additional_type: Option<Tokens>;
+        let inferred_type: Tokens;
+        let additional_type: Option<Tokens>;
+        let lifetime: Option<Ident>;
 
         let schema = &schema["content"]["application/json"]["schema"];
         if let None = schema.as_hash() {
             inferred_type = quote!{ () };
-            has_lifetime = false;
+            lifetime = None;
             additional_type = None;
         } else {
             let (ty, lt, at) = datatype::infer_v3(&schema)?;
             inferred_type = ty;
-            has_lifetime = lt;
+            lifetime = lt;
             additional_type = at;
         }
 
@@ -52,18 +54,18 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
 
         if status_code < 400 {
             success_variants.push(variant_ident);
+            success_lifetime = success_lifetime.or(lifetime.clone());
 
-            if has_lifetime {
-                success_lifetime = quote!('a);
+            if lifetime.is_some() {
                 success_models.push(quote!{ #borrow #inferred_type });
             } else {
                 success_models.push(inferred_type);
             }
         } else {
             error_variants.push(variant_ident);
+            error_lifetime = error_lifetime.or(lifetime.clone());
 
-            if has_lifetime {
-                error_lifetime = quote!('a);
+            if lifetime.is_some() {
                 error_models.push(quote!{ #borrow #inferred_type });
             } else {
                 error_models.push(inferred_type);
