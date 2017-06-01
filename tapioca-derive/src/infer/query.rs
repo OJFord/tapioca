@@ -30,14 +30,19 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
 
         if let Some(true) = schema["required"].as_bool() {
             mandate = quote!(tapioca::datatype::Required);
+            accessors.push(quote!{ query_parameters.#field.to_string() });
         } else {
             mandate = quote!(tapioca::datatype::Optional);
+            accessors.push(quote!{
+                query_parameters.#field
+                    .map(|p| p.to_string())
+                    .unwrap_or("".to_owned())
+            });
         }
 
         idents.push(ident(name));
         types.push(quote!{ #mandate<#param_type> });
         name_strs.push(quote!{ #name });
-        accessors.push(quote!{ query_parameters.#field });
     }
 
     Ok((
@@ -51,10 +56,7 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
         quote! {
             url.query_pairs_mut()
                 .clear()
-                #(.append_pair(
-                    #name_strs,
-                    #accessors.unwrap_or("").to_string().as_str()
-                ))*
+                #(.append_pair(#name_strs, #accessors.as_str()))*
                 ;
         }
     ))
