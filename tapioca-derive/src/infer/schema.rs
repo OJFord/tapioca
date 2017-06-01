@@ -8,7 +8,7 @@ use infer::TokensResult;
 
 type FieldsAndSupportingTypes = (Vec<Tokens>, Tokens, Vec<Tokens>);
 
-fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
+fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
     let mut fields: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
     let mut lifetime = quote!();
@@ -19,7 +19,7 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
         let field_name = field.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
-        let (field_type, has_lifetime, additional_type) = datatype::infer_v3(&schema).unwrap();
+        let (ty, has_lt, maybe_at) = datatype::infer_v3(&schema).unwrap();
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
@@ -30,22 +30,55 @@ fn infer_ref(schema: &Yaml, required: &Vec<Yaml>) -> FieldsAndSupportingTypes {
             mandate = quote!(::tapioca::datatype::Optional);
         }
 
-        if has_lifetime {
+        if has_lt {
             lifetime = quote!('a);
             fields.push(quote!{
                 #[serde(borrow)]
-                #field_ident: #mandate<#field_type>
+                #field_ident: #mandate<#ty>
             });
         } else {
-            fields.push(quote!{ #field_ident: #mandate<#field_type> });
+            fields.push(quote!{ #field_ident: #mandate<#ty> });
         }
 
-        if let Some(additional_type) = additional_type {
+        if let Some(additional_type) = maybe_at {
             additional_types.push(additional_type);
         }
     }
 
     (fields, lifetime, additional_types)
+}
+
+fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult {
+    match schema["properties"].as_hash() {
+        Some(_) => {
+            let (fields, lifetime, additionals) = infer_ref_obj(&schema, &required);
+
+            Ok(quote! {
+                #(#additionals)*
+
+                #[derive(Deserialize)]
+                pub struct #ident<#lifetime> {
+                    #(#fields),*
+                }
+            })
+        },
+        None => {
+            let (alias_to, has_lt, additional) = match datatype::infer_v3(&schema)? {
+                (ty, has_lt, Some(additional)) => (ty, has_lt, additional),
+                (ty, has_lt, None) => (ty, has_lt, quote!{}),
+            };
+            let lifetime = match has_lt {
+                true => quote!('a),
+                false => quote!(),
+            };
+
+            Ok(quote! {
+                #additional
+
+                pub type #ident<#lifetime> = #alias_to;
+            })
+        },
+    }
 }
 
 pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
@@ -61,33 +94,24 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let api_url = schema["servers"][0]["url"].as_str()
         .expect("Must have at least one server URL.");
 
-    let mut schema_ref_struct_defs: Vec<Tokens> = Vec::new();
+    let mut schema_ref_defs: Vec<Tokens> = Vec::new();
     for (schema_ref, schema) in schema["components"]["schemas"].as_hash()
         .expect("#/components/schemas must be a map.")
     {
         let schema_ref_name = schema_ref.as_str()
             .expect("$ref name must be a string.");
-        let ident = Ident::new(schema_ref_name);
-        let (fields, lifetime, additional_types) = infer_ref(
-            schema,
-            schema["required"].as_vec().unwrap_or(&Vec::new())
-        );
-
-        schema_ref_struct_defs.push(quote! {
-            #(#additional_types)*
-
-            #[derive(Deserialize)]
-            pub struct #ident<#lifetime> {
-                #(#fields),*
-            }
-        });
+        schema_ref_defs.push(infer_ref(
+                &Ident::new(schema_ref_name),
+                &schema,
+                &schema["required"].as_vec().unwrap_or(&Vec::new())
+        )?);
     }
 
     Ok(quote! {
         mod schema_ref {
             use super::schema_ref;
 
-            #(#schema_ref_struct_defs)*
+            #(#schema_ref_defs)*
         }
 
         const API_URL: &'static str = #api_url;
