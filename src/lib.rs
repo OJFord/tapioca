@@ -23,6 +23,8 @@ macro_rules! infer_api {
         #[macro_use]
         extern crate serde_derive;
 
+        use tapioca::Response;
+
         mod $name {
             #[derive(Schema)]
             #[SchemaURL = $url]
