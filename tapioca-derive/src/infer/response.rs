@@ -26,15 +26,25 @@ pub(super) fn infer_v3(enum_idents: &(Ident, Ident), schema: &Yaml) -> TokensRes
     let mut success_lifetime = quote!();
     let mut additional_types: Vec<Tokens> = Vec::new();
 
-    for (code, schema) in schema.as_hash()
-        .expect("Responses must be a map.")
-    {
-        let schema = &schema["content"]["application/json"]["schema"];
-        schema.as_hash().expect("Only application/json responses are supported.");
-
+    for (code, schema) in schema.as_hash().expect("Responses must be a map.") {
         let (status_code, status_str) = parse_response_key(&code);
         let variant_ident = Ident::new(status_str);
-        let (inferred_type, has_lifetime, additional_type) = datatype::infer_v3(&schema)?;
+
+        let mut inferred_type: Tokens;
+        let mut has_lifetime: bool;
+        let mut additional_type: Option<Tokens>;
+
+        let schema = &schema["content"]["application/json"]["schema"];
+        if let None = schema.as_hash() {
+            inferred_type = quote!{ () };
+            has_lifetime = false;
+            additional_type = None;
+        } else {
+            let (ty, lt, at) = datatype::infer_v3(&schema)?;
+            inferred_type = ty;
+            has_lifetime = lt;
+            additional_type = at;
+        }
 
         if let Some(t) = additional_type {
             additional_types.push(t);
