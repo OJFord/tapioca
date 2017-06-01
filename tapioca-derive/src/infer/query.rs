@@ -21,11 +21,11 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
     let mut name_strs: Vec<Tokens> = Vec::new();
     let mut accessors: Vec<Tokens> = Vec::new();
 
-    for param_schema in schema.as_vec().unwrap() {
-        let name = param_schema["name"].as_str()
+    for schema in schema.as_vec().unwrap() {
+        let name = schema["name"].as_str()
             .expect("Parameter name must be a string.");
         let field = ident(name);
-        let (param_type, _) = datatype::infer_v3(&param_schema["schema"])?;
+        let (param_type, _) = datatype::infer_v3(&schema["schema"])?;
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
