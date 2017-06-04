@@ -18,8 +18,20 @@ fn main() {
     match uber::products::get(query_params) {
         Ok(result) => match result.body() {
             OkBody::Status200(body) => {
-                let list = body.products.unwrap_or(vec![]);
-                println!("First product: {:?}", list[0]);
+                let list = body.products
+                    .unwrap_or(vec![]);
+
+                if list.len() > 0 {
+                    let first = &list[0];
+                    let default = String::from("Unknown");
+                    let first_id = first.product_id
+                        .as_ref()
+                        .unwrap_or(&default);
+
+                    println!("First product: {}", first_id);
+                } else {
+                    println!("No products!");
+                }
             },
             OkBody::UnspecifiedCode(body) => println!(
                 "Grr.. the server returned something not in its schema: {}",
@@ -27,11 +39,12 @@ fn main() {
             )
         },
         Err(result) => match result.body() {
-            ErrBody::UnspecifiedCode(body) => println!(
-                "Error message: {:?}",
-                body.message
-                    .unwrap_or(String::from("[No message]"))
-            ),
+            ErrBody::UnspecifiedCode(body) => {
+                let message = body.message
+                    .unwrap_or(String::from("[None given]"));
+
+                println!("Error message: {}", message);
+            },
             ErrBody::NetworkFailure() => println!("Request failed!"),
         },
     }
