@@ -11,7 +11,9 @@ pub extern crate serde_json;
 use rustc_plugin::Registry;
 use syntax::feature_gate::AttributeType;
 
-pub use reqwest::{Client, Url};
+pub use reqwest::header;
+pub use reqwest::Client;
+pub use reqwest::Url;
 pub use serde::Deserialize;
 
 pub mod response;

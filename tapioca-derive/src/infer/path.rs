@@ -30,6 +30,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
             use ::tapioca::Client;
             use ::tapioca::Deserialize;
             use ::tapioca::Url;
+            use ::tapioca::header;
             use ::tapioca::response::ClientResponse;
             use ::tapioca::response::Response;
             use ::tapioca::response::Status;

@@ -74,7 +74,10 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             #(#transformations)*
 
             let client = Client::new().unwrap();
-            let mut response = client.#method_fn(url).send().ok();
+            let request = client.#method_fn(url)
+                .header(header::Accept::json());
+
+            let mut response = request.send().ok();
             <#method_mod::ResponseResult as Response>::from(&mut response.as_mut())
         }
     })
