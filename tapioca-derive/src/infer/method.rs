@@ -67,9 +67,9 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
 
         #[allow(dead_code)]
         pub fn #method_fn<#(#bounds),*>(#(#args),*) -> #method_mod::ResponseResult {
-            let mut url = Url::parse(self::API_URL)
-                .expect("Malformed server URL or path.");
-            url.set_path(self::API_PATH);
+            let mut url = Url::parse(
+                format!("{}{}", self::API_URL, self::API_PATH).as_str()
+            ).expect("Malformed server URL or path.");
 
             #(#transformations)*
 
