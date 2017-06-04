@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit="256"]
 extern crate inflector;
 extern crate proc_macro;
 #[macro_use] extern crate quote;

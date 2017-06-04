@@ -7,30 +7,26 @@ use ::yaml_rust::Yaml;
 
 use infer::Error;
 
-const LIFETIME: &'static str = "'tapioca";
-
-type TypeLifetimeSupportResult = Result<
-    (Tokens, Option<Ident>, Option<Tokens>),
+type TypeSupportResult = Result<
+    (Tokens, Option<Tokens>),
     Box<Error + Send + Sync>
 >;
 
-pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
-    let lifetime = Ident::new(LIFETIME);
-
+pub(super) fn infer_v3(schema: &Yaml) -> TypeSupportResult {
     if let Some(schema_ref) = schema["$ref"].as_str() {
         let ref_name = schema_ref.rsplit('/')
             .next().expect("Malformed $ref")
             .to_class_case();
         let ident = Ident::new(ref_name);
 
-        Ok((quote!{ schema_ref::#ident<#lifetime> }, Some(lifetime), None))
+        Ok((quote!{ schema_ref::#ident }, None))
     } else {
         match schema["type"].as_str() {
             None => Err(From::from("Parameter schema type must be a string.")),
 
             Some("array") => {
-                let (item_type, array_lt, supp_types) = infer_v3(&schema["items"])?;
-                Ok((quote!{ Vec<#item_type> }, array_lt, supp_types))
+                let (item_type, supp_types) = infer_v3(&schema["items"])?;
+                Ok((quote!{ Vec<#item_type> }, supp_types))
             },
 
             Some("object") => {
@@ -44,7 +40,6 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
                         .collect(),
                     None => Vec::new(),
                 };
-                let mut struct_lifetime: Option<Ident> = None;
 
                 for (name, schema) in schema["properties"].as_hash()
                     .expect("Properties must be a map.")
@@ -53,9 +48,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
                         .expect("Property keys must be strings.");
 
                     let rusty_ident = Ident::new(name.to_snake_case());
-                    let (field_type, field_lt, supp_types) = infer_v3(&schema)?;
-
-                    struct_lifetime = struct_lifetime.or(field_lt);
+                    let (field_type, supp_types) = infer_v3(&schema)?;
 
                     if let Some(supp_types) = supp_types {
                         additional_types.push(supp_types);
@@ -83,12 +76,11 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
 
                 Ok((
                     quote!(#ident),
-                    struct_lifetime,
                     Some(quote!{
                         #(#additional_types)*
 
-                        #[derive(Deserialize)]
-                        struct #ident<#lifetime> {
+                        #[derive(Clone, Deserialize)]
+                        struct #ident {
                             #(#fields),*
                         }
                     })
@@ -98,8 +90,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
             Some("integer") => {
                 match schema["format"].as_str() {
                     None
-                        | Some("int64") => Ok((quote!{i64}, None, None)),
-                    Some("int32") => Ok((quote!{i32}, None, None)),
+                        | Some("int64") => Ok((quote!{i64}, None)),
+                    Some("int32") => Ok((quote!{i32}, None)),
                     Some(_) => Err(From::from("Invalid format for `integer` type.")),
                 }
             },
@@ -107,27 +99,27 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeLifetimeSupportResult {
             Some("number") => {
                 match schema["format"].as_str() {
                     None
-                        | Some("double") => Ok((quote!{f64}, None, None)),
-                    Some("float") => Ok((quote!{f32}, None, None)),
+                        | Some("double") => Ok((quote!{f64}, None)),
+                    Some("float") => Ok((quote!{f32}, None)),
                     Some(_) => Err(From::from("Invalid format for `number` type.")),
                 }
             },
 
             Some("string") => {
                 match schema["format"].as_str() {
-                    None => Ok((quote!{&#lifetime str}, Some(lifetime), None)),
-                    Some("byte") => Ok((quote!{::tapioca::Base64}, None, None)),
-                    Some("binary") => Ok((quote!{&#lifetime [u8]}, Some(lifetime), None)),
-                    Some("date") => Ok((quote!{::tapioca::Date}, None, None)),
-                    Some("date-time") => Ok((quote!{::tapioca::DateTime}, None, None)),
-                    Some("password") => Ok((quote!{&#lifetime str}, Some(lifetime), None)),
-                    Some(_) => Ok((quote!{&#lifetime str}, Some(lifetime), None)),
+                    None => Ok((quote!{String}, None)),
+                    Some("byte") => Ok((quote!{::tapioca::Base64}, None)),
+                    Some("binary") => Ok((quote!{&'static [u8]}, None)),
+                    Some("date") => Ok((quote!{::tapioca::Date}, None)),
+                    Some("date-time") => Ok((quote!{::tapioca::DateTime}, None)),
+                    Some("password") => Ok((quote!{String}, None)),
+                    Some(_) => Ok((quote!{String}, None)),
                 }
             },
 
             Some("boolean") => {
                 match schema["format"].as_str() {
-                    None => Ok((quote!{bool}, None, None)),
+                    None => Ok((quote!{bool}, None)),
                     Some(_) => Err(From::from("Unexpected format for `boolean` type.")),
                 }
             },

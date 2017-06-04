@@ -15,21 +15,18 @@ fn ident(param: &str) -> Ident {
     Ident::new(param.to_snake_case())
 }
 
-pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImpl {
+pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl {
     let mut idents: Vec<Ident> = Vec::new();
     let mut types: Vec<Tokens> = Vec::new();
     let mut name_strs: Vec<Tokens> = Vec::new();
     let mut accessors: Vec<Tokens> = Vec::new();
-    let mut struct_lifetime: Option<Ident> = None;
 
     for schema in schema.as_vec().unwrap() {
         let name = schema["name"].as_str()
             .expect("Parameter name must be a string.");
         let field = ident(name);
-        let (param_type, lifetime, _) = datatype::infer_v3(&schema["schema"])?;
+        let (param_type, _) = datatype::infer_v3(&schema["schema"])?;
         let mandate: Tokens;
-
-        struct_lifetime = struct_lifetime.or(lifetime);
 
         if let Some(true) = schema["required"].as_bool() {
             mandate = quote!(::tapioca::datatype::Required);
@@ -50,12 +47,12 @@ pub(super) fn infer_v3(struct_ident: &Ident, schema: &Yaml) -> StructBoundArgImp
 
     Ok((
         quote! {
-            pub struct #struct_ident<#struct_lifetime> {
+            pub struct QueryParams {
                 #(pub #idents: #types),*
             }
         },
         quote! {},
-        quote! { query_parameters: &#struct_ident },
+        quote! { query_parameters: #structs_mod::QueryParams },
         quote! {
             url.query_pairs_mut()
                 .clear()

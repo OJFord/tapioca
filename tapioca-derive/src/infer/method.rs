@@ -22,24 +22,17 @@ pub(super) fn valid(method: &str) -> bool {
 
 fn fn_ident(method: &str) -> Ident {
     assert!(valid(method), "Invalid method: {}", method);
-    Ident::new(method.to_lowercase())
+    Ident::new(method.to_snake_case())
 }
 
-fn query_param_struct_ident(method: &str) -> Ident {
+fn mod_ident(method: &str) -> Ident {
     assert!(valid(method), "Invalid method: {}", method);
-    Ident::new(format!("{}QueryParams", method.to_class_case()))
-}
-
-fn response_struct_idents(method: &str) -> (Ident, Ident) {
-    assert!(valid(method), "Invalid method: {}", method);
-    (
-        Ident::new(format!("{}OkResponse", method.to_class_case())),
-        Ident::new(format!("{}ErrResponse", method.to_class_case())),
-    )
+    Ident::new(method.to_snake_case())
 }
 
 pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
     let method_fn = fn_ident(&method);
+    let method_mod = mod_ident(&method);
 
     let mut structs: Vec<Tokens> = Vec::new();
     let mut bounds: Vec<Tokens> = Vec::new();
@@ -54,7 +47,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
 
         if query_parameters.len() > 0 {
             let (s, b, a, t) = query::infer_v3(
-                &query_param_struct_ident(&method),
+                &method_mod,
                 &Yaml::Array(query_parameters)
             )?;
             structs.push(s);
@@ -64,25 +57,25 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         }
     }
 
-    structs.push(
-        response::infer_v3(&response_struct_idents(&method), &schema["responses"])?
-    );
+    structs.push(response::infer_v3(&schema["responses"])?);
 
     Ok(quote! {
-        #(#structs)*
+        pub mod #method_mod {
+            use super::schema_ref;
+            #(#structs)*
+        }
 
         #[allow(dead_code)]
-        pub fn #method_fn<#(#bounds),*>(#(#args),*) -> tapioca::ResponseResult {
-            let mut url = tapioca::Url::parse(self::API_URL)
+        pub fn #method_fn<#(#bounds),*>(#(#args),*) -> #method_mod::ResponseResult {
+            let mut url = Url::parse(self::API_URL)
                 .expect("Malformed server URL or path.");
             url.set_path(self::API_PATH);
 
             #(#transformations)*
 
-            let client = tapioca::Client::new().unwrap();
-            let mut result = client.#method_fn(url).send();
-            let response = &mut result.as_mut().ok();
-            <tapioca::ResponseResult as tapioca::Response>::from(response)
+            let client = Client::new().unwrap();
+            let mut response = client.#method_fn(url).send().ok();
+            <#method_mod::ResponseResult as Response>::from(&mut response.as_mut())
         }
     })
 }

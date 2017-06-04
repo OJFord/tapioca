@@ -10,10 +10,25 @@ infer_api!(uber, "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/Op
 fn main() {
     use uber::products;
 
-    let query_params = products::GetQueryParams {
+    let query_params = products::get::QueryParams {
         latitude: 10.3,
         longitude: 237.8,
     };
 
-    products::get(&query_params);
+    match products::get(query_params) {
+        Ok(result) => match result.body() {
+            products::get::OkBody::Status200(body) => {
+                let list = body.products.unwrap_or(vec![]);
+                println!("First product: {}", list[0]);
+            },
+        },
+        Err(result) => match result.body() {
+            products::get::ErrBody::Status520(body) => {
+                println!("Error message: {}", body.message);
+            },
+            products::get::ErrBody::NetworkFailure() => {
+                println!("Request failed!");
+            },
+        },
+    }
 }

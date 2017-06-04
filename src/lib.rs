@@ -3,17 +3,19 @@
 
 extern crate reqwest;
 extern crate rustc_plugin;
-extern crate serde_json;
 extern crate syntax;
+
+pub extern crate serde;
+pub extern crate serde_json;
 
 use rustc_plugin::Registry;
 use syntax::feature_gate::AttributeType;
 
-mod response;
-pub mod datatype;
-
 pub use reqwest::{Client, Url};
-pub use response::{Response, ResponseResult};
+pub use serde::Deserialize;
+
+pub mod response;
+pub mod datatype;
 
 #[macro_export]
 macro_rules! infer_api {
@@ -23,7 +25,7 @@ macro_rules! infer_api {
         #[macro_use]
         extern crate serde_derive;
 
-        use tapioca::Response;
+        use tapioca::response::Response;
 
         mod $name {
             #[derive(Schema)]

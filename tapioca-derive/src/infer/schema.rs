@@ -6,12 +6,11 @@ use infer::datatype;
 use infer::path;
 use infer::TokensResult;
 
-type FieldsLifetimeSupport = (Vec<Tokens>, Option<Ident>, Vec<Tokens>);
+type FieldsSupport = (Vec<Tokens>, Vec<Tokens>);
 
-fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsLifetimeSupport {
+fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsSupport {
     let mut fields: Vec<Tokens> = Vec::new();
     let mut additional_types: Vec<Tokens> = Vec::new();
-    let mut struct_lifetime: Option<Ident> = None;
 
     for (field, schema) in schema["properties"].as_hash()
         .expect("Properties must be a map.")
@@ -19,7 +18,7 @@ fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsLifetimeSupport {
         let field_name = field.as_str()
             .expect("Property must be a string.");
         let field_ident = Ident::new(field_name);
-        let (ty, lifetime, maybe_at) = datatype::infer_v3(&schema).unwrap();
+        let (ty, maybe_at) = datatype::infer_v3(&schema).unwrap();
         let mandate: Tokens;
 
         if let Some(true) = schema["required"].as_bool() {
@@ -30,41 +29,32 @@ fn infer_ref_obj(schema: &Yaml, required: &Vec<Yaml>) -> FieldsLifetimeSupport {
             mandate = quote!(::tapioca::datatype::Optional);
         }
 
-        struct_lifetime = struct_lifetime.or(lifetime.clone());
-
-        if lifetime.is_some() {
-            fields.push(quote!{
-                #[serde(borrow)]
-                #field_ident: #mandate<#ty>
-            });
-        } else {
-            fields.push(quote!{ #field_ident: #mandate<#ty> });
-        }
+        fields.push(quote!{ #field_ident: #mandate<#ty> });
 
         if let Some(additional_type) = maybe_at {
             additional_types.push(additional_type);
         }
     }
 
-    (fields, struct_lifetime, additional_types)
+    (fields, additional_types)
 }
 
 fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult {
     match schema["properties"].as_hash() {
         Some(_) => {
-            let (fields, lifetime, additionals) = infer_ref_obj(&schema, &required);
+            let (fields, additionals) = infer_ref_obj(&schema, &required);
 
             Ok(quote! {
                 #(#additionals)*
 
-                #[derive(Deserialize)]
-                pub struct #ident<#lifetime> {
-                    #(#fields),*
+                #[derive(Clone, Deserialize)]
+                pub struct #ident {
+                    #(pub #fields),*
                 }
             })
         },
         None => {
-            let (alias_to, lifetime, maybe_at) = datatype::infer_v3(&schema)?;
+            let (alias_to, maybe_at) = datatype::infer_v3(&schema)?;
             let additional_type = match maybe_at {
                 Some(at) => at,
                 None => quote!(),
@@ -73,7 +63,7 @@ fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult
             Ok(quote! {
                 #additional_type
 
-                pub type #ident<#lifetime> = #alias_to;
+                pub type #ident = #alias_to;
             })
         },
     }
