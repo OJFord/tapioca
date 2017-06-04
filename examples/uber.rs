@@ -19,12 +19,12 @@ fn main() {
         Ok(result) => match result.body() {
             products::get::OkBody::Status200(body) => {
                 let list = body.products.unwrap_or(vec![]);
-                println!("First product: {}", list[0]);
+                println!("First product: {:?}", list[0]);
             },
         },
         Err(result) => match result.body() {
             products::get::ErrBody::Status520(body) => {
-                println!("Error message: {}", body.message);
+                println!("Error message: {:?}", body.message);
             },
             products::get::ErrBody::NetworkFailure() => {
                 println!("Request failed!");

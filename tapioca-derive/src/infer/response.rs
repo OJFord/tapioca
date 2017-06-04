@@ -72,7 +72,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         use ::tapioca::serde_json;
 
         #(
-            #[derive(Clone, Deserialize)]
+            #[derive(Clone, Debug, Deserialize)]
             #additional_types
         )*
 

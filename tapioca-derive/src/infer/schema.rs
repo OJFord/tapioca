@@ -47,7 +47,7 @@ fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult
             Ok(quote! {
                 #(#additionals)*
 
-                #[derive(Clone, Deserialize)]
+                #[derive(Clone, Debug, Deserialize)]
                 pub struct #ident {
                     #(pub #fields),*
                 }
