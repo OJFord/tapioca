@@ -5,12 +5,12 @@ use ::yaml_rust::Yaml;
 use infer::datatype;
 use infer::TokensResult;
 
-const UNKNOWN_ERR_CODE: u16 = 520;
+const UNSPECIFIED_CODE: u16 = 999;
 
-fn parse_response_key(key: &Yaml) -> (u16, String) {
+fn parse_response_key(key: &Yaml) -> (u16, Ident) {
     match key.as_i64() {
-        Some(code) => (code as u16, format!("Status{}", code)),
-        None => (UNKNOWN_ERR_CODE, format!("Status{}", UNKNOWN_ERR_CODE)),
+        Some(code) => (code as u16, Ident::new(format!("Status{}", code))),
+        None => (UNSPECIFIED_CODE, Ident::new("UnspecifiedCode")),
     }
 }
 
@@ -24,10 +24,15 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let mut ok_models: Vec<Tokens> = Vec::new();
 
     let mut additional_types: Vec<Tokens> = Vec::new();
+    let mut unspecified_err = quote!(UnspecifiedCode(String),);
+    let mut unspecified_err_deser = quote! {
+        let mut buf = String::new();
+        response.read_to_string(&mut buf);
+        ErrBody::UnspecifiedCode(buf)
+    };
 
     for (code, schema) in schema.as_hash().expect("Responses must be a map.") {
-        let (status_code, status_str) = parse_response_key(&code);
-        let variant_ident = Ident::new(status_str);
+        let (status_code, variant_ident) = parse_response_key(&code);
 
         let inferred_type: Tokens;
         let additional_type: Option<Tokens>;
@@ -49,11 +54,21 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         if status_code < 400 {
             ok_codes.push(status_code);
             ok_variants.push(variant_ident);
-            ok_models.push(inferred_type);
+            ok_models.push(inferred_type.clone());
         } else {
             err_codes.push(status_code);
             err_variants.push(variant_ident);
-            err_models.push(inferred_type);
+            err_models.push(inferred_type.clone());
+        }
+
+        if code == &Yaml::from_str("default") {
+            // In this case we don't add a Bytes variant; instead use the given model.
+            unspecified_err = quote!();
+            unspecified_err_deser = quote! {
+                ErrBody::UnspecifiedCode(
+                    response.json::<#inferred_type>().expect("Malformed JSON")
+                )
+            };
         }
     }
 
@@ -62,6 +77,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let ok_variants2 = ok_variants.clone();
     let err_variants2 = err_variants.clone();
     Ok(quote! {
+        use std::io::Read;
         use ::tapioca::response::ClientResponse;
         use ::tapioca::response::Response;
         use ::tapioca::response::ResponseBody;
@@ -81,12 +97,14 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
 
         #[derive(Clone)]
         pub enum OkBody {
-            #(#ok_variants(#ok_models)),*
+            #(#ok_variants(#ok_models),)*
+            UnspecifiedCode(String),
         }
 
         #[derive(Clone)]
         pub enum ErrBody {
             #(#err_variants(#err_models),)*
+            #unspecified_err
             NetworkFailure(),
         }
 
@@ -160,12 +178,16 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 }.to_u16();
 
                 match (maybe_response, status_code) {
-                    #((
-                        &mut Some(ref mut response), #ok_codes
-                    ) => OkBody::#ok_variants2(
+                    #((&mut Some(ref mut response), #ok_codes) => OkBody::#ok_variants2(
                         response.json::<#ok_models2>().expect("Malformed JSON")
                     ),)*
-                    (_, _) => panic!("Unexpected code {}", status_code),
+                    (&mut Some(ref mut response), _) => {
+                        let mut buf = String::new();
+                        response.read_to_string(&mut buf);
+
+                        OkBody::UnspecifiedCode(buf)
+                    },
+                    (&mut None, _) => panic!("OkResponse requires Some response"),
                 }
             }
         }
@@ -175,15 +197,16 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 let status_code = match *maybe_response {
                     Some(ref response) => StatusCode::of(&Some(response)),
                     None => StatusCode::of(&None),
-                }.to_u16();
+                };
+                assert!(status_code.is_err());
 
-                match (maybe_response, status_code) {
-                    #((
-                        &mut Some(ref mut response), #err_codes
-                    ) => ErrBody::#err_variants2(
+                match (maybe_response, status_code.to_u16()) {
+                    #((&mut Some(ref mut response), #err_codes) => ErrBody::#err_variants2(
                         response.json::<#err_models2>().expect("Malformed JSON")
                     ),)*
-                    (&mut Some(_), _) => panic!("Unexpected code {}", status_code),
+                    (&mut Some(ref mut response), _) => {
+                        #unspecified_err_deser
+                    },
                     (&mut None, _) => ErrBody::NetworkFailure(),
                 }
             }

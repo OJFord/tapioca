@@ -21,9 +21,13 @@ fn main() {
                 let list = body.products.unwrap_or(vec![]);
                 println!("First product: {:?}", list[0]);
             },
+            OkBody::UnspecifiedCode(body) => println!(
+                "Grr.. the server returned something not in its schema: {}",
+                body
+            )
         },
         Err(result) => match result.body() {
-            ErrBody::Status520(body) => println!(
+            ErrBody::UnspecifiedCode(body) => println!(
                 "Error message: {:?}",
                 body.message
                     .unwrap_or(String::from("[No message]"))
