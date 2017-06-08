@@ -9,7 +9,6 @@ pub extern crate serde;
 pub extern crate serde_json;
 
 use rustc_plugin::Registry;
-use syntax::feature_gate::AttributeType;
 
 pub use reqwest::header;
 pub use reqwest::Client;
@@ -23,21 +22,18 @@ pub mod datatype;
 macro_rules! infer_api {
     ($name:ident, $url:expr) => {
         #[macro_use]
-        extern crate tapioca_derive;
-        #[macro_use]
         extern crate serde_derive;
+        #[macro_use]
+        extern crate tapioca_macro;
 
         use tapioca::response::Response;
 
         mod $name {
-            #[derive(Schema)]
-            #[SchemaURL = $url]
-            struct _Anchor;
+            ::tapioca_macro::infer!($url);
         }
     }
 }
 
 #[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
-    reg.register_attribute("SchemaURL".to_owned(), AttributeType::Whitelisted);
+pub fn plugin_registrar(_: &mut Registry) {
 }

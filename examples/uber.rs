@@ -1,6 +1,5 @@
 #![feature(associated_consts)]
-#![feature(plugin)]
-#![plugin(tapioca)]
+#![feature(use_extern_macros)]
 
 #[macro_use]
 extern crate tapioca;
