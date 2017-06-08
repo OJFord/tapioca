@@ -84,16 +84,20 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         .expect("Must have at least one server URL.");
 
     let mut schema_ref_defs: Vec<Tokens> = Vec::new();
-    for (schema_ref, schema) in schema["components"]["schemas"].as_hash()
-        .expect("#/components/schemas must be a map.")
-    {
-        let schema_ref_name = schema_ref.as_str()
-            .expect("$ref name must be a string.");
-        schema_ref_defs.push(infer_ref(
-                &Ident::new(schema_ref_name),
-                &schema,
-                &schema["required"].as_vec().unwrap_or(&Vec::new())
-        )?);
+    let schema_refs = &schema["components"]["schemas"];
+
+    if !schema_refs.is_badvalue() {
+        for (schema_ref, schema) in schema_refs.as_hash()
+            .expect("#/components/schemas must be a map.")
+        {
+            let schema_ref_name = schema_ref.as_str()
+                .expect("$ref name must be a string.");
+            schema_ref_defs.push(infer_ref(
+                    &Ident::new(schema_ref_name),
+                    &schema,
+                    &schema["required"].as_vec().unwrap_or(&Vec::new())
+            )?);
+        }
     }
 
     Ok(quote! {
