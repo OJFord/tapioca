@@ -25,12 +25,12 @@ macro_rules! infer_api {
     ($name:ident, $url:expr) => {
         #[macro_use]
         extern crate serde_derive;
-        extern crate tapioca_macro;
+        extern crate tapioca_codegen;
 
         use tapioca::response::Response;
 
         mod $name {
-            ::tapioca_macro::infer!($url);
+            ::tapioca_codegen::infer!($url);
         }
     }
 }

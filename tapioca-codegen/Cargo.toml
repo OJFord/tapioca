@@ -1,5 +1,5 @@
 [package]
-name = "tapioca-macro"
+name = "tapioca-codegen"
 version = "0.1.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 
