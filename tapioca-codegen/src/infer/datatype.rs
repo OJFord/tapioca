@@ -57,12 +57,12 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeSupportResult {
                     if required.contains(&name) {
                         fields.push(quote!{
                             #[serde(rename=#name)]
-                            #rusty_ident: #field_type
+                            pub #rusty_ident: #field_type
                         });
                     } else {
                         fields.push(quote!{
                             #[serde(rename=#name)]
-                            #rusty_ident: Option<#field_type>
+                            pub #rusty_ident: Option<#field_type>
                         });
                     }
                 }
@@ -80,7 +80,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeSupportResult {
                         #(#additional_types)*
 
                         #[derive(Clone, Debug, Deserialize)]
-                        struct #ident {
+                        pub struct #ident {
                             #(#fields),*
                         }
                     })
