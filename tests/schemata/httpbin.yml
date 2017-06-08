@@ -1,0 +1,17 @@
+openapi: "3.0.0"
+servers:
+  - url: https://httpbin.org
+paths:
+  /ip:
+    get:
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - origin
+                properties:
+                  origin:
+                    type: string
