@@ -1,7 +1,11 @@
 [package]
 name = "tapioca-codegen"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
+description = "Type-safe REST APIs via OAS"
+repository = "https://github.com/OJFord/tapioca/tree/master/tapioca-codegen"
+license = "MIT"
+license-file = "../LICENCE"
 
 [lib]
 proc-macro = true

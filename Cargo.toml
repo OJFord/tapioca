@@ -1,7 +1,11 @@
 [package]
 name = "tapioca"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
+description = "Type-safe REST APIs via OAS"
+repository = "https://github.com/OJFord/tapioca.git"
+license = "MIT"
+license-file = "LICENCE"
 
 [lib]
 name = "tapioca"
@@ -9,12 +13,12 @@ path = "src/lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
-clippy = {version="*", optional=true}
+clippy = {version="0.0", optional=true}
 reqwest = "0.6"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-tapioca-codegen = {path="tapioca-codegen"}
+tapioca-codegen = {version="0", path="tapioca-codegen"}
 
 [dev-dependencies]
-compiletest_rs = "*"
+compiletest_rs = "0.2"
