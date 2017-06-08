@@ -15,3 +15,34 @@ paths:
                 properties:
                   origin:
                     type: string
+  /post:
+    post:
+      parameters:
+        - name: echo
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - args
+                  - data
+                  - origin
+                  - url
+                properties:
+                  args:
+                    type: object
+                    properties:
+                      echo:
+                        type: string
+                  data:
+                    type: string
+                  origin:
+                    type: string
+                  url:
+                    type: string

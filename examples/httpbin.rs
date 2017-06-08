@@ -16,4 +16,15 @@ fn main() {
         },
         _ => println!("Failed to find IP address"),
     }
+
+    let query = httpbin::post::post::QueryParams {
+        echo: Some("echo me!".into()),
+    };
+    match httpbin::post::post(query) {
+        Ok(response) => match response.body() {
+            httpbin::post::post::OkBody::Status200(_) => assert!(true),
+            _ => panic!(),
+        },
+        _ => panic!(),
+    }
 }
