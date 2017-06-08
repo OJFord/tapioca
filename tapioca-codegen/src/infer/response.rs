@@ -85,10 +85,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         use ::tapioca::response::Status;
         use ::tapioca::response::StatusCode;
 
-        #(
-            #[derive(Clone, Debug, Deserialize)]
-            #additional_types
-        )*
+        #(#additional_types)*
 
         pub type ResponseResult = _ResponseResult<OkResult, ErrResult>;
 
