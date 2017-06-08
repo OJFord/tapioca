@@ -28,13 +28,9 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
     Ok(quote! {
         pub(super) mod #path_mod {
             use ::tapioca::Client;
-            use ::tapioca::Deserialize;
             use ::tapioca::Url;
             use ::tapioca::header;
-            use ::tapioca::response::ClientResponse;
             use ::tapioca::response::Response;
-            use ::tapioca::response::Status;
-            use ::tapioca::serde_json;
 
             use super::schema_ref;
             use super::API_URL;

@@ -66,6 +66,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         }
 
         #[allow(dead_code)]
+        #[allow(unused_mut)]
         pub fn #method_fn<#(#bounds),*>(#(#args),*) -> #method_mod::ResponseResult {
             let mut url = Url::parse(
                 format!("{}{}", self::API_URL, self::API_PATH).as_str()

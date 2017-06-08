@@ -27,7 +27,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let mut unspecified_err = quote!(UnspecifiedCode(String),);
     let mut unspecified_err_deser = quote! {
         let mut buf = String::new();
-        response.read_to_string(&mut buf);
+        response.read_to_string(&mut buf).ok();
         ErrBody::UnspecifiedCode(buf)
     };
 
@@ -84,8 +84,6 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         use ::tapioca::response::ResponseResult as _ResponseResult;
         use ::tapioca::response::Status;
         use ::tapioca::response::StatusCode;
-        use ::tapioca::serde::de::DeserializeOwned;
-        use ::tapioca::serde_json;
 
         #(
             #[derive(Clone, Debug, Deserialize)]
@@ -183,7 +181,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                     ),)*
                     (&mut Some(ref mut response), _) => {
                         let mut buf = String::new();
-                        response.read_to_string(&mut buf);
+                        response.read_to_string(&mut buf).ok();
 
                         OkBody::UnspecifiedCode(buf)
                     },
