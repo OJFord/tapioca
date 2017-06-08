@@ -1,3 +1,5 @@
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
 #![feature(plugin_registrar)]
 #![feature(rustc_private)]
 

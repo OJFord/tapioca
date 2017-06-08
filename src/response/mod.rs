@@ -7,7 +7,8 @@ pub mod body;
 pub mod status;
 
 pub type ClientResponse = ::reqwest::Response;
-pub type ResponseResult<O: Response, E: Response> = Result<O, E>;
+// O: Response, E: Response c.f. rust-lang/rust#21903
+pub type ResponseResult<O, E> = Result<O, E>;
 
 pub trait Response {
     type BodyType: ResponseBody;
@@ -34,9 +35,10 @@ impl<OB: ResponseBody, EB: ResponseBody, O, E> Response for ResponseResult<O, E>
         };
 
         match *maybe_response {
-            Some(_) => match error {
-                false => Ok(O::from(maybe_response)),
-                true => Err(E::from(maybe_response)),
+            Some(_) => if error {
+                Err(E::from(maybe_response))
+            } else {
+                Ok(O::from(maybe_response))
             },
             None => Err(E::from(&mut None)),
         }
@@ -44,15 +46,15 @@ impl<OB: ResponseBody, EB: ResponseBody, O, E> Response for ResponseResult<O, E>
 
     fn body(&self) -> Self::BodyType {
         match *self {
-            Ok(ref s) => Ok(O::body(&s)),
-            Err(ref s) => Err(E::body(&s)),
+            Ok(ref s) => Ok(O::body(s)),
+            Err(ref s) => Err(E::body(s)),
         }
     }
 
     fn status_code(&self) -> StatusCode {
         match *self {
-            Ok(ref s) => O::status_code(&s),
-            Err(ref s) => E::status_code(&s),
+            Ok(ref s) => O::status_code(s),
+            Err(ref s) => E::status_code(s),
         }
     }
 }

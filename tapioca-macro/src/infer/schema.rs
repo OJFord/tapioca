@@ -63,6 +63,7 @@ fn infer_ref(ident: &Ident, schema: &Yaml, required: &Vec<Yaml>) -> TokensResult
             Ok(quote! {
                 #additional_type
 
+                #[allow(dead_code)]
                 pub type #ident = #alias_to;
             })
         },

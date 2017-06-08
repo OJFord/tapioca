@@ -6,7 +6,8 @@ pub trait ResponseBody {
     fn from(&mut Option<&mut ClientResponse>) -> Self;
 }
 
-pub type ResponseResultBody<O: ResponseBody, E: ResponseBody> = Result<O, E>;
+// O: ResponseBody, E: ResponseBody c.f. rust-lang/rust#21903
+pub type ResponseResultBody<O, E> = Result<O, E>;
 
 impl<O, E> ResponseBody for ResponseResultBody<O, E>
     where O: ResponseBody, E: ResponseBody,
@@ -17,9 +18,10 @@ impl<O, E> ResponseBody for ResponseResultBody<O, E>
             None => true,
         };
 
-        match error {
-            false => Ok(<O as ResponseBody>::from(maybe_response)),
-            true => Err(<E as ResponseBody>::from(maybe_response)),
+        if error {
+            Err(<E as ResponseBody>::from(maybe_response))
+        } else {
+            Ok(<O as ResponseBody>::from(maybe_response))
         }
     }
 }
