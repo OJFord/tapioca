@@ -1,9 +1,0 @@
-[package]
-name = "tapioca_mir_plugin"
-version = "0.1.0"
-authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
-
-[lib]
-name = "tapioca_mir_plugin"
-path = "src/lib.rs"
-plugin = true
