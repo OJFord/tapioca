@@ -47,6 +47,7 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
 
     Ok((
         quote! {
+            #[derive(Debug)]
             pub struct QueryParams {
                 #(pub #idents: #types),*
             }

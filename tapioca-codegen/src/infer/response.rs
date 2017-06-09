@@ -90,24 +90,26 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         pub type ResponseResult = _ResponseResult<OkResult, ErrResult>;
 
 
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub enum OkBody {
             #(#ok_variants(#ok_models),)*
             UnspecifiedCode(String),
         }
 
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub enum ErrBody {
             #(#err_variants(#err_models),)*
             #unspecified_err
             NetworkFailure(),
         }
 
+        #[derive(Debug)]
         pub struct OkResult {
             body: OkBody,
             status_code: StatusCode,
         }
 
+        #[derive(Debug)]
         pub struct ErrResult {
             body: ErrBody,
             status_code: StatusCode,
