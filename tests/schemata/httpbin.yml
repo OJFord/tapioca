@@ -18,10 +18,29 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: number
-                  format: float
+                type: object
+                required:
+                  - args
+                  - method
+                  - origin
+                  - url
+                properties:
+                  args:
+                    type: object
+                    required:
+                      - array
+                    properties:
+                      array:
+                        type: array
+                        items:
+                          type: number
+                          format: float
+                  method:
+                    type: string
+                  origin:
+                    type: string
+                  url:
+                    type: string
   /anything/ref:
     get:
       parameters:
