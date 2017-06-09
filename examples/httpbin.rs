@@ -1,8 +1,8 @@
 #![feature(associated_consts)]
 #![feature(use_extern_macros)]
+#![allow(plugin_as_library)]
 
 #[macro_use]
-#[allow(plugin_as_library)]
 extern crate tapioca;
 
 infer_api!(httpbin, "https://raw.githubusercontent.com/OJFord/tapioca/master/tests/schemata/httpbin.yml");

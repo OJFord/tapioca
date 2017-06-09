@@ -36,7 +36,7 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
             accessors.push(quote!{
                 query_parameters.#field
                     .map(|p| p.to_string())
-                    .unwrap_or("".to_owned())
+                    .unwrap_or_else(|| "".into())
             });
         }
 
