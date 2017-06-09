@@ -19,6 +19,7 @@ pub use serde::Deserialize;
 
 pub mod response;
 pub mod datatype;
+pub mod query;
 
 #[macro_export]
 macro_rules! infer_api {

@@ -63,6 +63,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         pub mod #method_mod {
             #[allow(unused_imports)]
             use super::schema_ref;
+
             #(#structs)*
         }
 

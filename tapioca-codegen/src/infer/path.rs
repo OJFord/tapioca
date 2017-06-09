@@ -31,6 +31,8 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
             use ::tapioca::Url;
             use ::tapioca::header;
             use ::tapioca::response::Response;
+            #[allow(unused_imports)]
+            use ::tapioca::query::QueryString;
 
             use super::schema_ref;
             use super::API_URL;
