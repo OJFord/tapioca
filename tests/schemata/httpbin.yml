@@ -2,6 +2,59 @@ openapi: "3.0.0"
 servers:
   - url: https://httpbin.org
 paths:
+  /anything/array:
+    get:
+      parameters:
+        - name: array
+          required: true
+          in: query
+          schema:
+            type: array
+            items:
+              type: number
+              format: float
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+                  format: float
+  /anything/ref:
+    get:
+      parameters:
+        - name: array
+          required: true
+          in: query
+          schema:
+            $ref: "#/components/schemas/AnArray"
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - args
+                  - method
+                  - origin
+                  - url
+                properties:
+                  args:
+                    type: object
+                    required:
+                      - array
+                    properties:
+                      array:
+                        $ref: "#/components/schemas/AnArray"
+                  method:
+                    type: string
+                  origin:
+                    type: string
+                  url:
+                    type: string
   /ip:
     get:
       responses:
@@ -46,3 +99,9 @@ paths:
                     type: string
                   url:
                     type: string
+components:
+  schemas:
+    AnArray:
+      type: array
+      items:
+        type: string
