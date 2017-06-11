@@ -33,8 +33,7 @@ paths:
                       array:
                         type: array
                         items:
-                          type: number
-                          format: float
+                          type: string
                   method:
                     type: string
                   origin:
