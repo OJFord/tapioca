@@ -8,7 +8,7 @@ use infer::TokensResult;
 
 fn mod_ident(path: &str) -> Ident {
     let rustified = path.replace('/', " ").trim().to_snake_case();
-    let re = Regex::new(r"\{(?P<resource>[^}]+)\}").unwrap();
+    let re = Regex::new(r"\{(?P<resource>[^}]+)_\}").unwrap();
     let ident = re.replace_all(rustified.as_str(), "_${resource}_");
 
     Ident::new(ident)
