@@ -8,8 +8,8 @@ use infer::TokensResult;
 
 fn mod_ident(path: &str) -> Ident {
     let rustified = path.replace('/', " ").trim().to_snake_case();
-    let re = Regex::new(r"\{[^/}]+\}").unwrap();
-    let ident = re.replace_all(rustified.as_str(), "resource");
+    let re = Regex::new(r"\{(?P<resource>[^}]+)\}").unwrap();
+    let ident = re.replace_all(rustified.as_str(), "_${resource}_");
 
     Ident::new(ident)
 }
@@ -26,6 +26,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
     }
 
     Ok(quote! {
+        #[allow(non_snake_case)]
         pub(super) mod #path_mod {
             use ::tapioca::Client;
             use ::tapioca::Url;
@@ -75,21 +76,21 @@ mod tests {
 
     #[test]
     fn resource() {
-        assert_eq!(mod_ident("/foo/{id}"), Ident::new("foo_resource"));
+        assert_eq!(mod_ident("/foo/{id}"), Ident::new("foo__id_"));
     }
 
     #[test]
     fn multi_resource() {
-        assert_eq!(mod_ident("/foo/{id}/{bar}"), Ident::new("foo_resource_resource"));
+        assert_eq!(mod_ident("/foo/{id}/{bar}"), Ident::new("foo__id___bar_"));
     }
 
     #[test]
     fn multipart_resource() {
-        assert_eq!(mod_ident("/f/{x}/b"), Ident::new("foo_resource_b"));
+        assert_eq!(mod_ident("/foo/{id}/bar"), Ident::new("foo__id__bar"));
     }
 
     #[test]
     fn multipart_multiresource() {
-        assert_eq!(mod_ident("/f/{x}/b/{y}"), Ident::new("foo_resource_b_resource"));
+        assert_eq!(mod_ident("/foo/{id}/bar/{bar_id}"), Ident::new("foo__id__bar__bar_id_"));
     }
 }
