@@ -136,6 +136,12 @@ paths:
                   url:
                     type: string
   /status/{code}:
+    parameters:
+      - name: code
+        in: path
+        schema:
+          type: integer
+          format: int32
     get:
       responses:
         200:

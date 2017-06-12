@@ -4,12 +4,7 @@ use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
 use infer::datatype;
-use infer::Error;
-
-type StructBoundArgImpl = Result<
-    (Tokens, Tokens, Tokens, Tokens),
-    Box<Error + Send + Sync>
->;
+use infer::StructBoundArgImpl;
 
 fn ident(param: &str) -> Ident {
     Ident::new(param.to_snake_case())

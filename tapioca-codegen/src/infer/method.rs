@@ -3,6 +3,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::params;
 use infer::query;
 use infer::response;
 use infer::TokensResult;
@@ -39,17 +40,25 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
     let mut args: Vec<Tokens> = Vec::new();
     let mut transformations: Vec<Tokens> = Vec::new();
 
-    let query_parameters: Vec<Yaml>;
     if let Some(parameters) = schema["parameters"].as_vec() {
-        query_parameters = parameters
-            .iter().cloned()
-            .filter(|p| p["in"] == Yaml::from_str("query")).collect();
+        let query_parameters = parameters.iter().cloned()
+            .filter(|p| p["in"] == Yaml::from_str("query"))
+            .collect::<Vec<Yaml>>();
 
-        if query_parameters.len() > 0 {
-            let (s, b, a, t) = query::infer_v3(
-                &method_mod,
-                &Yaml::Array(query_parameters)
-            )?;
+        if !query_parameters.is_empty() {
+            let (s, b, a, t) = query::infer_v3(&method_mod, &Yaml::Array(query_parameters))?;
+            structs.push(s);
+            bounds.push(b);
+            args.push(a);
+            transformations.push(t);
+        }
+
+        let path_parameters = parameters.iter().cloned()
+            .filter(|p| p["in"] == Yaml::from_str("path"))
+            .collect::<Vec<Yaml>>();
+
+        if !path_parameters.is_empty() {
+            let (s, b, a, t) = params::infer_v3(&method_mod, &Yaml::Array(path_parameters))?;
             structs.push(s);
             bounds.push(b);
             args.push(a);
@@ -70,9 +79,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         #[allow(dead_code)]
         #[allow(unused_mut)]
         pub fn #method_fn<#(#bounds),*>(#(#args),*) -> #method_mod::ResponseResult {
-            let mut url = Url::parse(
-                format!("{}{}", self::API_URL, self::API_PATH).as_str()
-            ).expect("Malformed server URL or path.");
+            let mut url = Url::parse(self::API_URL)
+                .expect("Malformed server URL or path.");
 
             #(#transformations)*
 

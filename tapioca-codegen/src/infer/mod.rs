@@ -5,6 +5,7 @@ use ::yaml_rust::Yaml;
 mod datatype;
 mod method;
 mod query;
+mod params;
 mod path;
 mod response;
 mod schema;
@@ -12,6 +13,7 @@ mod schema;
 const SCHEMA_VERSION_KEY: &'static str = "openapi";
 
 type TokensResult = Result<Tokens, Box<Error + Send + Sync>>;
+type StructBoundArgImpl = Result<(Tokens, Tokens, Tokens, Tokens), Box<Error + Send + Sync>>;
 
 pub(super) fn infer_schema(schema: &Yaml) -> TokensResult {
     match schema[SCHEMA_VERSION_KEY].as_str() {
