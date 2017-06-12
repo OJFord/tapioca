@@ -40,9 +40,18 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
     let mut args: Vec<Tokens> = Vec::new();
     let mut transformations: Vec<Tokens> = Vec::new();
 
+    let path_set = quote! {
+        url.path_segments_mut().unwrap()
+            .extend(self::API_PATH.split('/'));
+    };
+
     if let Some(parameters) = schema["parameters"].as_vec() {
         let query_parameters = parameters.iter().cloned()
             .filter(|p| p["in"] == Yaml::from_str("query"))
+            .collect::<Vec<Yaml>>();
+
+        let path_parameters = parameters.iter().cloned()
+            .filter(|p| p["in"] == Yaml::from_str("path"))
             .collect::<Vec<Yaml>>();
 
         if !query_parameters.is_empty() {
@@ -53,17 +62,17 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             transformations.push(t);
         }
 
-        let path_parameters = parameters.iter().cloned()
-            .filter(|p| p["in"] == Yaml::from_str("path"))
-            .collect::<Vec<Yaml>>();
-
         if !path_parameters.is_empty() {
             let (s, b, a, t) = params::infer_v3(&method_mod, &Yaml::Array(path_parameters))?;
             structs.push(s);
             bounds.push(b);
             args.push(a);
             transformations.push(t);
+        } else {
+            transformations.push(path_set);
         }
+    } else {
+        transformations.push(path_set);
     }
 
     structs.push(response::infer_v3(&schema["responses"])?);
