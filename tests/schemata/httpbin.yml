@@ -2,6 +2,22 @@ openapi: "3.0.0"
 servers:
   - url: https://httpbin.org
 paths:
+  /anything:
+    get:
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - headers
+                properties:
+                  headers:
+                    type: object
+                    properties:
+                      Accept:
+                        type: string
   /anything/array:
     get:
       parameters:
