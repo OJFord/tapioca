@@ -135,6 +135,29 @@ paths:
                     type: string
                   url:
                     type: string
+  /status/{code}:
+    get:
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+        201:
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          content:
+            application/json:
+              schema:
+                type: object
+        401:
+          content:
+            application/json:
+              schema:
+                type: object
 components:
   schemas:
     AnArray:
