@@ -11,7 +11,7 @@ fn main() {
     match httpbin::anything::get() {
         Ok(response) => match response.body() {
             httpbin::anything::get::OkBody::Status200(body) => assert!(
-                body.headers.Accept.contains("application/json")
+                body.headers.accept.contains("application/json")
             ),
             _ => assert!(false),
         },

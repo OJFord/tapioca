@@ -15,6 +15,8 @@ paths:
                 properties:
                   headers:
                     type: object
+                    required:
+                      - Accept
                     properties:
                       Accept:
                         type: string
