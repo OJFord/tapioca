@@ -139,25 +139,13 @@ paths:
     get:
       responses:
         200:
-          content:
-            application/json:
-              schema:
-                type: object
+          description: "An Ok response"
         201:
-          content:
-            application/json:
-              schema:
-                type: object
+          description: "An Ok response"
         400:
-          content:
-            application/json:
-              schema:
-                type: object
+          description: "An Err response"
         401:
-          content:
-            application/json:
-              schema:
-                type: object
+          description: "An Err response"
 components:
   schemas:
     AnArray:
