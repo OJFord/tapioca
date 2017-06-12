@@ -4,11 +4,10 @@ pub trait QueryString {
     fn as_query_kv(&self) -> Vec<QueryPair>;
 
     fn as_query(&self) -> String {
-        let params: Vec<String> = self.as_query_kv().iter()
+        self.as_query_kv().iter()
             .map(|&(ref k, ref v)| format!("{}={}", k, v))
-            .collect();
-
-        format!("?{}", params.join("&"))
+            .collect::<Vec<String>>()
+            .join("&")
     }
 }
 
