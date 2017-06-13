@@ -33,9 +33,9 @@ fn main() {
                     println!("No products!");
                 }
             },
-            OkBody::UnspecifiedCode(body) => println!(
-                "Grr.. the server returned something not in its schema: {}", body
-            ),
+            OkBody::UnspecifiedCode(body) =>
+                println!("Grr.. the server returned something not in its schema: {}", body),
+            OkBody::MalformedJSON(body) => println!("Bad response: {}", body),
         },
         Err(result) => match result.body() {
             ErrBody::UnspecifiedCode(body) => {
@@ -45,6 +45,7 @@ fn main() {
                 println!("Error message: {}", message);
             },
             ErrBody::NetworkFailure() => println!("Request failed!"),
+            ErrBody::MalformedJSON(body) => println!("Bad response: {}", body),
         },
     }
 }

@@ -65,9 +65,14 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             // In this case we don't add a Bytes variant; instead use the given model.
             unspecified_err = quote!();
             unspecified_err_deser = quote! {
-                ErrBody::UnspecifiedCode(
-                    response.json::<#inferred_type>().expect("Malformed JSON")
-                )
+                match response.json::<#inferred_type>() {
+                    Ok(body) => ErrBody::UnspecifiedCode(body),
+                    Err(_) => {
+                        let mut buf = String::new();
+                        response.read_to_string(&mut buf).ok();
+                        ErrBody::MalformedJSON(buf)
+                    }
+                }
             };
         }
     }
@@ -91,15 +96,19 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
 
 
         #[derive(Clone, Debug)]
+        #[allow(dead_code)]
         pub enum OkBody {
             #(#ok_variants(#ok_models),)*
+            MalformedJSON(String),
             UnspecifiedCode(String),
         }
 
         #[derive(Clone, Debug)]
+        #[allow(dead_code)]
         pub enum ErrBody {
             #(#err_variants(#err_models),)*
             #unspecified_err
+            MalformedJSON(String),
             NetworkFailure(),
         }
 
@@ -175,13 +184,20 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 }.to_u16();
 
                 match (maybe_response, status_code) {
-                    #((&mut Some(ref mut response), #ok_codes) => OkBody::#ok_variants2(
-                        response.json::<#ok_models2>().expect("Malformed JSON")
-                    ),)*
+                    #(
+                    (&mut Some(ref mut response), #ok_codes) =>
+                        match response.json::<#ok_models2>() {
+                            Ok(body) => OkBody::#ok_variants2(body),
+                            Err(_) => {
+                                let mut buf = String::new();
+                                response.read_to_string(&mut buf).ok();
+                                OkBody::MalformedJSON(buf)
+                            },
+                        },
+                    )*
                     (&mut Some(ref mut response), _) => {
                         let mut buf = String::new();
                         response.read_to_string(&mut buf).ok();
-
                         OkBody::UnspecifiedCode(buf)
                     },
                     (&mut None, _) => panic!("OkResponse requires Some response"),
@@ -198,12 +214,18 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 assert!(status_code.is_err());
 
                 match (maybe_response, status_code.to_u16()) {
-                    #((&mut Some(ref mut response), #err_codes) => ErrBody::#err_variants2(
-                        response.json::<#err_models2>().expect("Malformed JSON")
-                    ),)*
-                    (&mut Some(ref mut response), _) => {
-                        #unspecified_err_deser
-                    },
+                    #(
+                    (&mut Some(ref mut response), #err_codes) =>
+                        match response.json::<#err_models2>() {
+                            Ok(body) => ErrBody::#err_variants2(body),
+                            Err(_) => {
+                                let mut buf = String::new();
+                                response.read_to_string(&mut buf).ok();
+                                ErrBody::MalformedJSON(buf)
+                            },
+                        },
+                    )*
+                    (&mut Some(ref mut response), _) => { #unspecified_err_deser },
                     (&mut None, _) => ErrBody::NetworkFailure(),
                 }
             }
