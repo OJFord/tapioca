@@ -23,7 +23,7 @@ pub(super) fn infer_v3(_: &Ident, schema: &Yaml) -> StructBoundArgImpl {
 
         idents.push(ident(name));
         types.push(quote!{ ::tapioca::datatype::Required<#param_type> });
-        placeholders.push(name.into());
+        placeholders.push(format!("{{{}}}", name));
 
         if let Some(supporting_type) = maybe_at {
             supporting_types.push(supporting_type);
@@ -37,7 +37,10 @@ pub(super) fn infer_v3(_: &Ident, schema: &Yaml) -> StructBoundArgImpl {
         quote!{ #(#idents: #types),* },
         quote! {
             let parts = self::API_PATH.split('/')
-                .map(|p| match p { #(#placeholders => #params.to_string(),)* _ => p.into() });
+                .map(|p| match p {
+                    #(#placeholders => #params.to_string(),)*
+                    _ => p.to_string(),
+                });
             url.path_segments_mut().unwrap()
                 .extend(parts);
         }
