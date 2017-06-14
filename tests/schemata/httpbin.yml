@@ -110,14 +110,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - musthave
-              properties:
-                musthave:
-                  type: string
-                ifyouwant:
-                  $ref: "#/components/schemas/AnArray"
+              $ref: "#/components/schemas/PatchBody"
       responses:
         200:
           content:
@@ -128,14 +121,7 @@ paths:
                   - json
                 properties:
                   json:
-                    type: object
-                    required:
-                      - musthave
-                    properties:
-                      musthave:
-                        type: string
-                      ifyouwant:
-                        $ref: "#/components/schemas/AnArray"
+                    $ref: "#/components/schemas/PatchBody"
   /post:
     post:
       parameters:
@@ -190,3 +176,12 @@ components:
       type: array
       items:
         type: string
+    PatchBody:
+      type: object
+      required:
+        - musthave
+      properties:
+        musthave:
+          type: string
+        ifyouwant:
+          $ref: "#/components/schemas/AnArray"
