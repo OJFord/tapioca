@@ -79,7 +79,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TypeSupportResult {
                     Some(quote!{
                         #(#additional_types)*
 
-                        #[derive(Clone, Debug, Deserialize, Serialize)]
+                        #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
                         pub struct #ident {
                             #(#fields),*
                         }
