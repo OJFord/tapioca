@@ -101,7 +101,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     }
 
     Ok(quote! {
-        mod schema_ref {
+        pub mod schema_ref {
             #[allow(unused_imports)]
             use super::schema_ref;
 

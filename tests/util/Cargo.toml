@@ -1,0 +1,16 @@
+[package]
+name = "tapioca-testutil"
+version = "0.0.0"
+authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
+description = "Type-safe REST APIs via OAS"
+repository = "https://github.com/OJFord/tapioca.git"
+license-file = "../../LICENCE"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+tapioca = {path="../../"}
+tapioca-codegen = {path="../../tapioca-codegen"}

@@ -9,7 +9,7 @@ license-file = "LICENCE"
 [lib]
 name = "tapioca"
 path = "src/lib.rs"
-crate-type = ["rlib", "dylib"]
+crate-type = ["rlib"]
 
 [dependencies]
 clippy = {version="0.0", optional=true}
@@ -21,3 +21,4 @@ tapioca-codegen = {version="0", path="tapioca-codegen"}
 
 [dev-dependencies]
 compiletest_rs = "0.2"
+tapioca-testutil = {version="0", path="tests/util"}

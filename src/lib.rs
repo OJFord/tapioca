@@ -22,9 +22,9 @@ macro_rules! infer_api {
         extern crate serde_derive;
         extern crate tapioca_codegen;
 
-        use tapioca::response::Response;
+        pub use tapioca::response::Response;
 
-        mod $name {
+        pub mod $name {
             ::tapioca_codegen::infer!($url);
         }
     }

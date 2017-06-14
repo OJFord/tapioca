@@ -1,10 +1,7 @@
-#![feature(associated_consts)]
 #![feature(use_extern_macros)]
+extern crate tapioca_testutil;
 
-#[macro_use]
-extern crate tapioca;
-
-infer_api!(httpbin, "https://raw.githubusercontent.com/OJFord/tapioca/master/tests/schemata/httpbin.yml");
+tapioca_testutil::infer_test_api!(httpbin);
 
 fn main() {
     let query = httpbin::post::post::QueryParams {
