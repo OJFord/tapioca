@@ -104,6 +104,38 @@ paths:
                 properties:
                   origin:
                     type: string
+  /patch:
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - musthave
+              properties:
+                musthave:
+                  type: string
+                ifyouwant:
+                  $ref: "#/components/schemas/AnArray"
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - json
+                properties:
+                  json:
+                    type: object
+                    required:
+                      - musthave
+                    properties:
+                      musthave:
+                        type: string
+                      ifyouwant:
+                        $ref: "#/components/schemas/AnArray"
   /post:
     post:
       parameters:

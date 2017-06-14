@@ -19,9 +19,9 @@ fn response_ref() {
     match anything_ref::get(query) {
         Ok(response) => match response.body() {
             anything_ref::get::OkBody::Status200(body) => assert_eq!(body.args.array, test_vec),
-            _ => panic!(),
+            _ => assert!(false),
         },
-        _ => panic!(),
+        _ => assert!(false),
     }
 }
 
@@ -40,8 +40,26 @@ fn response_array() {
                 body.args.array,
                 test_vec.iter().map(ToString::to_string).collect::<Vec<_>>()
             ),
-            _ => panic!(),
+            _ => assert!(false),
         },
-        _ => panic!(),
+        _ => assert!(false),
+    }
+}
+
+#[test]
+fn request() {
+    use httpbin::patch;
+
+    let req_body = patch::patch::RequestBody {
+        musthave: "foobar",
+        ifyouwant: Some(vec![]),
+    };
+
+    match patch::patch(req_body.clone()) {
+        Ok(response) => match response.body() {
+            patch::patch::OkBody::Status200(body) => assert_eq!(body.json, req_body),
+            _ => assert!(false),
+        },
+        _ => assert!(false),
     }
 }
