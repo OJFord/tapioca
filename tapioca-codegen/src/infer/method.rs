@@ -3,6 +3,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::body;
 use infer::params;
 use infer::query;
 use infer::response;
@@ -39,6 +40,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
     let mut bounds: Vec<Tokens> = Vec::new();
     let mut args: Vec<Tokens> = Vec::new();
     let mut url_transforms: Vec<Tokens> = Vec::new();
+    let mut req_transforms: Vec<Tokens> = Vec::new();
 
     if let Some(parameters) = schema["parameters"].as_vec() {
         let query_parameters = parameters.iter().cloned()
@@ -66,6 +68,17 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         }
     }
 
+    match schema["requestBody"] {
+        Yaml::BadValue => (),
+        ref schema => {
+            let (s, b, a, t) = body::infer_v3(&method_mod, &schema)?;
+            structs.push(s);
+            bounds.push(b);
+            args.push(a);
+            req_transforms.push(t);
+        }
+    }
+
     structs.push(response::infer_v3(&schema["responses"])?);
 
     Ok(quote! {
@@ -85,7 +98,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
 
             let client = Client::new().unwrap();
             let request = client.#method_fn(url)
-                .header(header::Accept::json());
+                .header(header::Accept::json())
+                #(#req_transforms)*;
 
             let mut response = request.send().ok();
             <#method_mod::ResponseResult as Response>::from(&mut response.as_mut())
