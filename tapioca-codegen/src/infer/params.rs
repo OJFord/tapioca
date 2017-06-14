@@ -36,13 +36,13 @@ pub(super) fn infer_v3(_: &Ident, schema: &Yaml) -> StructBoundArgImpl {
         quote!(),
         quote!{ #(#idents: #types),* },
         quote! {
-            let parts = self::API_PATH.split('/')
-                .map(|p| match p {
+            .path_segments_mut().unwrap()
+                .clear()
+                .push(Url::parse(self::API_URL).unwrap().path())
+                .extend(self::API_PATH.split('/').map(|p| match p {
                     #(#placeholders => #params.to_string(),)*
                     _ => p.to_string(),
-                });
-            url.path_segments_mut().unwrap()
-                .extend(parts);
+                }))
         }
     ))
 }

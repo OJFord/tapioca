@@ -38,12 +38,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
     let mut structs: Vec<Tokens> = Vec::new();
     let mut bounds: Vec<Tokens> = Vec::new();
     let mut args: Vec<Tokens> = Vec::new();
-    let mut transformations: Vec<Tokens> = Vec::new();
-
-    let path_set = quote! {
-        url.path_segments_mut().unwrap()
-            .extend(self::API_PATH.split('/'));
-    };
+    let mut url_transforms: Vec<Tokens> = Vec::new();
 
     if let Some(parameters) = schema["parameters"].as_vec() {
         let query_parameters = parameters.iter().cloned()
@@ -59,7 +54,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             structs.push(s);
             bounds.push(b);
             args.push(a);
-            transformations.push(t);
+            url_transforms.push(t);
         }
 
         if !path_parameters.is_empty() {
@@ -67,12 +62,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
             structs.push(s);
             bounds.push(b);
             args.push(a);
-            transformations.push(t);
-        } else {
-            transformations.push(path_set);
+            url_transforms.push(t);
         }
-    } else {
-        transformations.push(path_set);
     }
 
     structs.push(response::infer_v3(&schema["responses"])?);
@@ -88,10 +79,9 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         #[allow(dead_code)]
         #[allow(unused_mut)]
         pub fn #method_fn<#(#bounds),*>(#(#args),*) -> #method_mod::ResponseResult {
-            let mut url = Url::parse(self::API_URL)
-                .expect("Malformed server URL or path.");
-
-            #(#transformations)*
+            let mut url = Url::parse(format!("{}{}", self::API_URL, self::API_PATH).as_str())
+                .expect("malformed server URL or path");
+            #(url#url_transforms;)*
 
             let client = Client::new().unwrap();
             let request = client.#method_fn(url)
