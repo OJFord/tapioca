@@ -11,7 +11,7 @@ fn infer_v3_json(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl {
     Ok((
         quote! {
             #(#aux_types)*
-            type RequestBody = #inferred_type;
+            pub type RequestBody = #inferred_type;
         },
         quote!(),
         quote!(body: &#structs_mod::RequestBody),
