@@ -1,5 +1,4 @@
 #![feature(associated_consts)]
-#![feature(type_ascription)]
 #![feature(use_extern_macros)]
 #![allow(plugin_as_library)]
 
@@ -39,7 +38,7 @@ fn response_array() {
         Ok(response) => match response.body() {
             anything_array::get::OkBody::Status200(body) => assert_eq!(
                 body.args.array,
-                test_vec.iter().map(|f| format!("{}", f)).collect(): Vec<String>
+                test_vec.iter().map(ToString::to_string).collect::<Vec<_>>()
             ),
             _ => panic!(),
         },

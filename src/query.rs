@@ -6,7 +6,7 @@ pub trait QueryString {
     fn as_query(&self) -> String {
         self.as_query_kv().iter()
             .map(|&(ref k, ref v)| format!("{}={}", k, v))
-            .collect::<Vec<String>>()
+            .collect::<Vec<_>>()
             .join("&")
     }
 }

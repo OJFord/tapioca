@@ -66,8 +66,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             unspecified_err = quote!();
             unspecified_err_deser = quote! {
                 deser_into::<#inferred_type>(response)
-                    .map(|b| ErrBody::UnspecifiedCode(b))
-                    .unwrap_or_else(|b| ErrBody::MalformedJSON(b))
+                    .map(ErrBody::UnspecifiedCode)
+                    .unwrap_or_else(ErrBody::MalformedJSON)
             };
         }
     }
@@ -194,8 +194,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                     #(
                     (&mut Some(ref mut response), #ok_codes) =>
                         deser_into::<#ok_models2>(response)
-                            .map(|b| OkBody::#ok_variants2(b))
-                            .unwrap_or_else(|b| OkBody::MalformedJSON(b)),
+                            .map(OkBody::#ok_variants2)
+                            .unwrap_or_else(OkBody::MalformedJSON),
                     )*
                     (&mut Some(ref mut response), _) => {
                         let mut buf = String::new();
@@ -219,8 +219,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                     #(
                     (&mut Some(ref mut response), #err_codes) =>
                         deser_into::<#err_models2>(response)
-                            .map(|b| ErrBody::#err_variants2(b))
-                            .unwrap_or_else(|b| ErrBody::MalformedJSON(b)),
+                            .map(ErrBody::#err_variants2)
+                            .unwrap_or_else(ErrBody::MalformedJSON),
                     )*
                     (&mut Some(ref mut response), _) => { #unspecified_err_deser },
                     (&mut None, _) => ErrBody::NetworkFailure(),

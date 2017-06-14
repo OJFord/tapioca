@@ -4,7 +4,6 @@ version = "0.0.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 description = "Type-safe REST APIs via OAS"
 repository = "https://github.com/OJFord/tapioca.git"
-license = "MIT"
 license-file = "LICENCE"
 
 [lib]
