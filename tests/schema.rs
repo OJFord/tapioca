@@ -51,11 +51,11 @@ fn request() {
     use httpbin::patch;
 
     let req_body = patch::patch::RequestBody {
-        musthave: "foobar",
+        musthave: "foobar".into(),
         ifyouwant: Some(vec![]),
     };
 
-    match patch::patch(req_body.clone()) {
+    match patch::patch(&req_body.clone()) {
         Ok(response) => match response.body() {
             patch::patch::OkBody::Status200(body) => assert_eq!(body.json, req_body),
             _ => assert!(false),
