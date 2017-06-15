@@ -154,6 +154,22 @@ paths:
                   url:
                     type: string
   /status/{code}:
+    delete:
+      parameters:
+        - name: code
+          in: path
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: "An Ok response"
+        201:
+          description: "An Ok response"
+        400:
+          description: "An Err response"
+        401:
+          description: "An Err response"
     get:
       parameters:
         - name: code
