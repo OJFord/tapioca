@@ -10,7 +10,7 @@ fn ident(param: &str) -> Ident {
     Ident::new(param.to_snake_case())
 }
 
-pub(super) fn infer_v3(_: &Ident, schema: &Yaml) -> StructBoundArgImpl {
+pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
     let mut idents: Vec<Ident> = Vec::new();
     let mut types: Vec<Tokens> = Vec::new();
     let mut supporting_types: Vec<Tokens> = Vec::new();
@@ -31,10 +31,25 @@ pub(super) fn infer_v3(_: &Ident, schema: &Yaml) -> StructBoundArgImpl {
     }
 
     let params = idents.clone();
+
+    let endpoint_id_arg = match (method.as_ref(), idents.pop(), types.pop()) {
+        ("delete", Some(endp_ident), Some(endp_type))
+            // The resource ID value is moved here, to avoid its reuse
+            // !FIXME: this assumes that the DELETE request succeeds
+            => quote!(#endp_ident: #endp_type),
+
+        (_, Some(endp_ident), Some(endp_type))
+            // We take a reference to the ID, as for any others if nested
+            => quote!(#endp_ident: &#endp_type),
+
+        (_, None, _)
+        | (_, _, None) => panic!("params::infer called without any params to infer"),
+    };
+
     Ok((
         quote!{ #(#supporting_types)* },
         quote!(),
-        quote!{ #(#idents: #types),* },
+        quote!{ #(#idents: &#types,)* #endpoint_id_arg },
         quote! {
             .path_segments_mut().unwrap()
                 .clear()

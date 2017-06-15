@@ -60,7 +60,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> TokensResult {
         }
 
         if !path_parameters.is_empty() {
-            let (s, b, a, t) = params::infer_v3(&method_mod, &Yaml::Array(path_parameters))?;
+            let (s, b, a, t) = params::infer_v3(&method, &Yaml::Array(path_parameters))?;
             structs.push(s);
             bounds.push(b);
             args.push(a);
