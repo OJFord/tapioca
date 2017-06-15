@@ -15,7 +15,7 @@ pub trait Response {
 
     fn from(&mut Option<&mut ClientResponse>) -> Self;
 
-    fn body(&self) -> Self::BodyType;
+    fn body(self) -> Self::BodyType;
     fn status_code(&self) -> StatusCode;
 
     fn is_ok(&self) -> bool {
@@ -44,10 +44,10 @@ impl<OB: ResponseBody, EB: ResponseBody, O, E> Response for ResponseResult<O, E>
         }
     }
 
-    fn body(&self) -> Self::BodyType {
-        match *self {
-            Ok(ref s) => Ok(O::body(s)),
-            Err(ref s) => Err(E::body(s)),
+    fn body(self) -> Self::BodyType {
+        match self {
+            Ok(s) => Ok(O::body(s)),
+            Err(s) => Err(E::body(s)),
         }
     }
 

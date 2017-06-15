@@ -10,7 +10,7 @@ fn main() {
         musthave: None, //~ mismatched types
         ifyouwant: Some(vec!["foo".into(), "bar".into(), "baz".into()]),
     };
-    match httpbin::patch::patch(&req_body.clone()) {
+    match httpbin::patch::patch(&req_body) {
         Ok(response) => match response.body() {
             httpbin::patch::patch::OkBody::Status200(res_body) =>
                 assert_eq!(res_body.json.musthave, req_body.musthave),

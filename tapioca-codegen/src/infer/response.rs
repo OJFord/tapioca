@@ -102,7 +102,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             }
         }
 
-        #[derive(Clone, Debug)]
+        #[derive(Debug)]
         #[allow(dead_code)]
         pub enum OkBody {
             #(#ok_variants(#ok_models),)*
@@ -110,7 +110,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             UnspecifiedCode(String),
         }
 
-        #[derive(Clone, Debug)]
+        #[derive(Debug)]
         #[allow(dead_code)]
         pub enum ErrBody {
             #(#err_variants(#err_models),)*
@@ -148,8 +148,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 }
             }
 
-            fn body(&self) -> Self::BodyType {
-                self.body.clone()
+            fn body(self) -> Self::BodyType {
+                self.body
             }
 
             fn status_code(&self) -> StatusCode {
@@ -173,8 +173,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
                 }
             }
 
-            fn body(&self) -> Self::BodyType {
-                self.body.clone()
+            fn body(self) -> Self::BodyType {
+                self.body
             }
 
             fn status_code(&self) -> StatusCode {

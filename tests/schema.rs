@@ -51,7 +51,7 @@ fn request() {
         ifyouwant: Some(vec![]),
     };
 
-    match patch::patch(&req_body.clone()) {
+    match patch::patch(&req_body) {
         Ok(response) => match response.body() {
             patch::patch::OkBody::Status200(body) => assert_eq!(body.json, req_body),
             _ => assert!(false),
