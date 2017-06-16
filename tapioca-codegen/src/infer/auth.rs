@@ -50,7 +50,7 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
         }
 
         impl header::HeaderFormat for #scheme_ident {
-            fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 f.write_str(self.0)
             }
         }

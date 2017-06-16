@@ -38,11 +38,11 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
             use ::tapioca::Client;
             use ::tapioca::Url;
             use ::tapioca::header;
-            use ::tapioca::HeaderResult;
             use ::tapioca::response::Response;
             #[allow(unused_imports)]
             use ::tapioca::query::QueryString;
 
+            use super::auth_scheme;
             use super::schema_ref;
             use super::API_URL;
             use super::ServerAuth;

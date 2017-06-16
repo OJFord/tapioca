@@ -143,7 +143,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             }
 
             impl header::HeaderFormat for #auth_struct {
-                fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                     f.write_str("")
                 }
             }
@@ -159,10 +159,12 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         }
 
         pub mod auth_scheme {
+            use ::tapioca::header;
+            use ::tapioca::HeaderResult;
+
             #(#auth_scheme_defs)*
         }
 
-        use std::fmt;
         use ::tapioca::header;
         use ::tapioca::HeaderResult;
 
