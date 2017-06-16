@@ -17,6 +17,6 @@ fn main() {
     status__code_::delete(&dummy_created_id); //~ mismatched types
     status__code_::get(&dummy_created_id);
 
-    status__code_::delete(dummy_created_id.clone()); //~ no clone
+    status__code_::delete(dummy_created_id.clone()); //~ no method named `clone`
     status__code_::get(&dummy_created_id);
 }
