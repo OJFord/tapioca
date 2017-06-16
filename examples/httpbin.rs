@@ -8,7 +8,9 @@ infer_api!(httpbin, "https://raw.githubusercontent.com/OJFord/tapioca/master/tes
 
 
 fn main() {
-    match httpbin::ip::get() {
+    let auth = httpbin::ServerAuth::new();
+
+    match httpbin::ip::get(auth) {
         Ok(response) => match response.body() {
             httpbin::ip::get::OkBody::Status200(body) => println!("Your IP is {}", body.origin),
             _ => panic!(),
@@ -19,7 +21,7 @@ fn main() {
     let query = httpbin::post::post::QueryParams {
         echo: Some("echo me!".into()),
     };
-    match httpbin::post::post(query) {
+    match httpbin::post::post(query, auth) {
         Ok(response) => match response.body() {
             httpbin::post::post::OkBody::Status200(_) => assert!(true),
             _ => panic!(),

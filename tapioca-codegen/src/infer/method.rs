@@ -113,7 +113,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
             });
         },
         ref schema => {
-            let struct_ident = Ident::new("OperationAuth");
+            let struct_ident = Ident::new("OpAuth");
 
             method_level_structs.push(auth::infer_v3(&struct_ident, &schema)?);
             args.push(quote!{ authentication: #method_mod::#struct_ident });

@@ -13,7 +13,7 @@ fn infer_v3_http(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
             pub type #scheme_ident = header::Basic;
 
             impl From<(String, String)> for #scheme_ident {
-                fn from((username, password): &(String, String)) -> Self {
+                pub fn from((username, password): &(String, String)) -> Self {
                     Self { username, password }
                 }
             }
@@ -26,8 +26,14 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
     let header_name = schema["name"].as_str().expect("apiKey header name must be a string");
 
     Ok(quote! {
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Copy, Debug)]
         pub struct #scheme_ident(String);
+
+        impl From<String> for #scheme_ident {
+            pub fn from(key: String) -> Self {
+                Self { 0: key }
+            }
+        }
 
         impl header::Header for #scheme_ident {
             fn header_name() -> &'static str {
