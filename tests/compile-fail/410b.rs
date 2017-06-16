@@ -5,12 +5,14 @@ tapioca_testutil::infer_test_api!(httpbin);
 
 use httpbin::status__code_;
 
-static code: &i32 = &200;
+const code: &'static i32 = &200;
 
 fn main() {
     let dummy_created_id = status__code_::ResourceId_code::from_static(code);
 
+    status__code_::delete(&dummy_created_id); //~ mismatched types
     status__code_::get(&dummy_created_id);
-    status__code_::delete(dummy_created_id);
-    status__code_::get(&dummy_created_id); //~ use of moved value
+
+    status__code_::delete(dummy_created_id.clone()); //~ no method named `clone`
+    status__code_::get(&dummy_created_id);
 }
