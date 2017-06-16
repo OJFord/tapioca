@@ -1,4 +1,3 @@
-use ::inflector::Inflector;
 use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
@@ -7,7 +6,6 @@ use infer::datatype;
 use infer::StructBoundArgImpl;
 
 pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
-    let method_mod = Ident::new(method.to_snake_case());
     let method = method.to_uppercase();
 
     let mut idents: Vec<Ident> = Vec::new();
@@ -20,10 +18,17 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
             .expect("Parameter name must be a string.");
         let (param_type, maybe_at) = datatype::infer_v3(&schema["schema"])?;
 
-        let struct_ident = Ident::new(format!("__ResourceId_{}", name));
+        let struct_ident = Ident::new(format!("ResourceId_{}", name));
         supporting_types.push(quote! {
             #[allow(non_camel_case_types)]
             pub struct #struct_ident(::tapioca::datatype::Required<#param_type>);
+
+            impl #struct_ident {
+                #[allow(dead_code)]
+                pub fn from_static(id: &'static #param_type) -> Self {
+                    Self { 0: id.clone() }
+                }
+            }
 
             impl ToString for #struct_ident {
                 fn to_string(&self) -> String {
@@ -33,7 +38,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
         });
 
         idents.push(Ident::new(name));
-        types.push(quote!{ #method_mod::#struct_ident });
+        types.push(quote!{ #struct_ident });
         placeholders.push(format!("{{{}}}", name));
 
         if let Some(supporting_type) = maybe_at {
