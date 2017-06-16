@@ -7,13 +7,13 @@ use infer::StructBoundArgImpl;
 fn infer_v3_json(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl {
     let (inferred_type, aux_types) = datatype::infer_v3(&schema)?;
     Ok((
-        quote! {
+        Some(quote! {
             #(#aux_types)*
             pub type RequestBody = #inferred_type;
-        },
-        quote!(),
-        quote!(body: &#structs_mod::RequestBody),
-        quote!(.json(body)),
+        }),
+        None,
+        Some(quote!{ body: &#structs_mod::RequestBody }),
+        Some(quote!{ .json(body) }),
     ))
 }
 

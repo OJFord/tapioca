@@ -55,21 +55,33 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
 
         if !query_parameters.is_empty() {
             let (s, b, a, t) = query::infer_v3(&method_mod, &Yaml::Array(query_parameters))?;
-            method_level_structs.push(s);
-            bounds.push(b);
-            args.push(a);
-            url_transforms.push(t);
+            if let Some(method_struct) = s {
+                method_level_structs.push(method_struct);
+            }
+            if let Some(bound) = b {
+                bounds.push(bound);
+            }
+            if let Some(arg) = a {
+                args.push(arg);
+            }
+            if let Some(transformation) = t {
+                url_transforms.push(transformation);
+            }
         }
 
         if !path_parameters.is_empty() {
             let (s, b, a, t) = params::infer_v3(&method, &Yaml::Array(path_parameters))?;
-            if s != quote!() {
-                path_level_structs = Some(s);
-            }
 
-            bounds.push(b);
-            args.push(a);
-            url_transforms.push(t);
+            path_level_structs = path_level_structs.or(s);
+            if let Some(bound) = b {
+                bounds.push(bound);
+            }
+            if let Some(arg) = a {
+                args.push(arg);
+            }
+            if let Some(transformation) = t {
+                url_transforms.push(transformation);
+            }
         }
     }
 
@@ -77,10 +89,19 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
         Yaml::BadValue => (),
         ref schema => {
             let (s, b, a, t) = body::infer_v3(&method_mod, &schema)?;
-            method_level_structs.push(s);
-            bounds.push(b);
-            args.push(a);
-            req_transforms.push(t);
+
+            if let Some(method_struct) = s {
+                method_level_structs.push(method_struct);
+            }
+            if let Some(bound) = b {
+                bounds.push(bound);
+            }
+            if let Some(arg) = a {
+                args.push(arg);
+            }
+            if let Some(transformation) = t {
+                req_transforms.push(transformation);
+            }
         }
     }
 
@@ -88,13 +109,21 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
         Yaml::BadValue => (),
         ref schema => {
             let (s, b, a, t) = auth::infer_v3(&method_mod, &schema)?;
-            method_level_structs.push(s);
-            bounds.push(b);
-            args.push(a);
-            req_transforms.push(t);
+
+            if let Some(method_struct) = s {
+                method_level_structs.push(method_struct);
+            }
+            if let Some(bound) = b {
+                bounds.push(bound);
+            }
+            if let Some(arg) = a {
+                args.push(arg);
+            }
+            if let Some(transformation) = t {
+                req_transforms.push(transformation);
+            }
         },
     }
-
 
     method_level_structs.push(response::infer_v3(&schema["responses"])?);
 

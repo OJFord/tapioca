@@ -15,7 +15,8 @@ mod schema;
 const SCHEMA_VERSION_KEY: &'static str = "openapi";
 
 type InferResult<T> = Result<T, Box<Error + Send + Sync>>;
-type StructBoundArgImpl = InferResult<(Tokens, Tokens, Tokens, Tokens)>;
+type MaybeTokens = Option<Tokens>;
+type StructBoundArgImpl = InferResult<(MaybeTokens, MaybeTokens, MaybeTokens, MaybeTokens)>;
 type TokensResult = InferResult<Tokens>;
 
 pub(super) fn infer_schema(schema: &Yaml) -> TokensResult {

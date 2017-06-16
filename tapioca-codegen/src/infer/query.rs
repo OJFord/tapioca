@@ -34,7 +34,7 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
 
     let idents2 = idents.clone();
     Ok((
-        quote! {
+        Some(quote! {
             use ::tapioca::query::QueryPair;
             use ::tapioca::query::QueryParameter;
             use ::tapioca::query::QueryString;
@@ -51,13 +51,13 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
                     params
                 }
             }
-        },
-        quote! {},
-        quote! { query_parameters: #structs_mod::QueryParams },
-        quote! {
+        }),
+        None,
+        Some(quote! { query_parameters: #structs_mod::QueryParams }),
+        Some(quote! {
             .query_pairs_mut()
                 .extend_pairs(query_parameters.as_query_kv())
                 .finish()
-        }
+        })
     ))
 }

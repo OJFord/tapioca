@@ -85,25 +85,25 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
             }
 
              Ok((
-                quote! {
+                Some(quote! {
                     pub enum OperationAuth {
                         #(#scheme_variants(#scheme_models<#scopes_models>),)*
                     }
-                },
-                quote!(),
-                quote!(authentication: &#structs_mod::OperationAuth),
-                quote! {
+                }),
+                None,
+                Some(quote!{ authentication: &#structs_mod::OperationAuth }),
+                Some(quote! {
                     .header(authentication)
-                }
+                })
             ))
         },
         None => Ok((
-            quote!(),
-            quote!(),
-            quote!(authentication: &ServerAuth),
-            quote! {
+            None,
+            None,
+            Some(quote!{ authentication: &ServerAuth }),
+            Some(quote! {
                 .header(authentication)
-            }
+            })
         )),
     }
 

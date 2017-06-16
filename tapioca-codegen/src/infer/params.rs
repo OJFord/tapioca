@@ -63,10 +63,10 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
     };
 
     Ok((
-        quote!{ #(#supporting_types)* },
-        quote!(),
-        quote!{ #(#idents: &#types,)* #endpoint_id_arg },
-        quote! {
+        Some(quote!{ #(#supporting_types)* }),
+        None,
+        Some(quote!{ #(#idents: &#types,)* #endpoint_id_arg }),
+        Some(quote! {
             .path_segments_mut().unwrap()
                 .clear()
                 .push(Url::parse(self::API_URL).unwrap().path())
@@ -74,6 +74,6 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
                     #(#placeholders => #params.to_string(),)*
                     _ => p.to_string(),
                 }))
-        }
+        })
     ))
 }
