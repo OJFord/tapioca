@@ -15,6 +15,8 @@ pub mod response;
 pub mod datatype;
 pub mod query;
 
+pub type HeaderResult<H> = Result<H, reqwest::HyperError>;
+
 #[macro_export]
 macro_rules! infer_api {
     ($name:ident, $url:expr) => {

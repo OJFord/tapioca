@@ -2,6 +2,7 @@ use std::error::Error;
 use ::quote::Tokens;
 use ::yaml_rust::Yaml;
 
+mod auth;
 mod body;
 mod datatype;
 mod method;

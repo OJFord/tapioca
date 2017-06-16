@@ -2,6 +2,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::auth;
 use infer::datatype;
 use infer::path;
 use infer::TokensResult;
@@ -100,12 +101,30 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         }
     }
 
+    let mut auth_scheme_defs: Vec<Tokens> = Vec::new();
+    let auth_schemes = &schema["components"]["securitySchemes"];
+
+    if !auth_schemes.is_badvalue() {
+        for (auth_scheme, schema) in auth_schemes.as_hash()
+            .expect("#/components/securitySchemes must be a map.")
+        {
+            let auth_scheme_name = auth_scheme.as_str()
+                .expect("security scheme name must be a string");
+
+            auth_scheme_defs.push(auth::infer_v3_component(auth_scheme_name, &schema)?);
+        }
+    }
+
     Ok(quote! {
         pub mod schema_ref {
             #[allow(unused_imports)]
             use super::schema_ref;
 
             #(#schema_ref_defs)*
+        }
+
+        pub mod auth_scheme {
+            #(#auth_scheme_defs)*
         }
 
         const API_URL: &'static str = #api_url;

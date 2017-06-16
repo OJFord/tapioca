@@ -3,6 +3,7 @@ use ::quote::Tokens;
 use ::syn::Ident;
 use ::yaml_rust::Yaml;
 
+use infer::auth;
 use infer::body;
 use infer::params;
 use infer::query;
@@ -82,6 +83,18 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
             req_transforms.push(t);
         }
     }
+
+    match schema["security"] {
+        Yaml::BadValue => (),
+        ref schema => {
+            let (s, b, a, t) = auth::infer_v3(&method_mod, &schema)?;
+            method_level_structs.push(s);
+            bounds.push(b);
+            args.push(a);
+            req_transforms.push(t);
+        },
+    }
+
 
     method_level_structs.push(response::infer_v3(&schema["responses"])?);
 
