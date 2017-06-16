@@ -106,22 +106,20 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
     }
 
     match schema["security"] {
-        Yaml::BadValue => (),
+        Yaml::BadValue => {
+            args.push(quote!{ authentication: &ServerAuth });
+            req_transforms.push(quote! {
+                .header(authentication)
+            });
+        },
         ref schema => {
-            let (s, b, a, t) = auth::infer_v3(&method_mod, &schema)?;
+            let struct_ident = Ident::new("OperationAuth");
 
-            if let Some(method_struct) = s {
-                method_level_structs.push(method_struct);
-            }
-            if let Some(bound) = b {
-                bounds.push(bound);
-            }
-            if let Some(arg) = a {
-                args.push(arg);
-            }
-            if let Some(transformation) = t {
-                req_transforms.push(transformation);
-            }
+            method_level_structs.push(auth::infer_v3(&struct_ident, &schema)?);
+            args.push(quote!{ authentication: &#method_mod::#struct_ident });
+            req_transforms.push(quote! {
+                .header(authentication)
+            });
         },
     }
 

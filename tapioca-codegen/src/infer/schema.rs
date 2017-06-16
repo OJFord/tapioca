@@ -115,6 +115,28 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         }
     }
 
+    let server_auth_impl: Tokens;
+    let auth_struct = Ident::new("ServerAuth");
+    let security_reqs = &schema["security"];
+
+    if !security_reqs.is_badvalue() {
+        server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs)?
+    } else {
+        server_auth_impl = quote!{
+            type #auth_struct = ();
+
+            impl header::Header for #auth_struct {
+                fn header_name() -> &'static str {
+                    ""
+                }
+
+                fn parse_header(_: &[Vec<u8>]) -> HeaderResult<()> {
+                    Ok(())
+                }
+            }
+        }
+    }
+
     Ok(quote! {
         pub mod schema_ref {
             #[allow(unused_imports)]
@@ -127,7 +149,13 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             #(#auth_scheme_defs)*
         }
 
+        use ::tapioca::header;
+        use ::tapioca::HeaderResult;
+
         const API_URL: &'static str = #api_url;
+
+        #[allow(dead_code)]
+        #server_auth_impl
 
         #(#path_impls)*
     })

@@ -45,6 +45,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
 
             use super::schema_ref;
             use super::API_URL;
+            use super::ServerAuth;
 
             const API_PATH: &'static str = #path;
 
