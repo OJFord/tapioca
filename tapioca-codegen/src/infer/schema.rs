@@ -123,15 +123,15 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs)?
     } else {
         server_auth_impl = quote!{
-            type #auth_struct = ();
+            pub struct #auth_struct(());
 
             impl header::Header for #auth_struct {
                 fn header_name() -> &'static str {
                     ""
                 }
 
-                fn parse_header(_: &[Vec<u8>]) -> HeaderResult<()> {
-                    Ok(())
+                fn parse_header(_: &[Vec<u8>]) -> HeaderResult<Self> {
+                    Ok(Self { 0: () })
                 }
             }
         }
