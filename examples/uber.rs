@@ -7,14 +7,16 @@ extern crate tapioca;
 infer_api!(uber, "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/OpenAPI.next/examples/v3.0/uber.yaml");
 
 fn main() {
-    use uber::products::get::{QueryParams, OkBody, ErrBody};
+    use uber::products::get::{OpAuth, QueryParams, OkBody, ErrBody};
+
+    let auth = OpAuth::from("abc");
 
     let query_params = QueryParams {
         latitude: 10.3,
         longitude: 237.8,
     };
 
-    match uber::products::get(query_params) {
+    match uber::products::get(query_params, auth) {
         Ok(result) => match result.body() {
             OkBody::Status200(body) => {
                 let list = body.products

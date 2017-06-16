@@ -8,6 +8,8 @@ use httpbin::redirect_to::get::QueryParams;
 
 #[test]
 fn ok_err_matching() {
+    let auth = httpbin::ServerAuth::new();
+
     let query200 = QueryParams {
         url: "http://httpbin.org/status/200".into(),
     };
@@ -16,12 +18,12 @@ fn ok_err_matching() {
         url: "http://httpbin.org/status/400".into(),
     };
 
-    match redirect_to::get(query200) {
+    match redirect_to::get(query200, auth) {
         Ok(_) => assert!(true),
         Err(_) => assert!(false),
     }
 
-    match redirect_to::get(query400) {
+    match redirect_to::get(query400, auth) {
         Ok(_) => assert!(false),
         Err(_) => assert!(true),
     }
@@ -29,6 +31,8 @@ fn ok_err_matching() {
 
 #[test]
 fn status_body_matching() {
+    let auth = httpbin::ServerAuth::new();
+
     let query200 = QueryParams {
         url: "http://httpbin.org/status/200".into(),
     };
@@ -37,7 +41,7 @@ fn status_body_matching() {
         url: "http://httpbin.org/status/400".into(),
     };
 
-    match redirect_to::get(query200) {
+    match redirect_to::get(query200, auth) {
         Ok(response) => match response.body() {
             redirect_to::get::OkBody::Status200(_) => assert!(true),
             _ => assert!(false),
@@ -45,7 +49,7 @@ fn status_body_matching() {
         Err(_) => assert!(false),
     }
 
-    match redirect_to::get(query400) {
+    match redirect_to::get(query400, auth) {
         Ok(_) => assert!(false),
         Err(response) => match response.body() {
             redirect_to::get::ErrBody::Status400(_) => assert!(true),
