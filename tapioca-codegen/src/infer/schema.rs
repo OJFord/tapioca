@@ -134,7 +134,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
 
             impl header::Header for #auth_struct {
                 fn header_name() -> &'static str {
-                    ""
+                    "X-No-Auth"
                 }
 
                 fn parse_header(_: &[Vec<u8>]) -> HeaderResult<Self> {
