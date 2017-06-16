@@ -23,6 +23,28 @@ fn infer_v3_http(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
     }
 }
 
+fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
+    let header_name = schema["name"].as_str().expect("apiKey header name must be a string");
+
+    Ok(quote! {
+        pub struct #scheme_ident(Vec<u8>);
+
+        impl header::Header for #scheme_ident {
+            fn header_name() -> &'static str {
+                #header_name
+            }
+
+            fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<#scheme_ident> {
+                if raw.len() == 1 {
+                    Ok(Self { 0: raw[0] })
+                } else {
+                    Err(From::from(format!("Multiple auth headers {}", #scheme_ident)))
+                }
+            }
+        }
+    })
+}
+
 pub(super) fn infer_v3_component(scheme_name: &str, schema: &Yaml) -> TokensResult {
     let ident = Ident::from(scheme_name.to_class_case());
 
@@ -30,7 +52,8 @@ pub(super) fn infer_v3_component(scheme_name: &str, schema: &Yaml) -> TokensResu
         .to_camel_case().as_str()
     {
         "http" => infer_v3_http(&ident, &schema),
-        _ => Err(From::from("currently supported auth types are: http")),
+        "apiKey" => infer_v3_api_key(&ident, &schema),
+        _ => Err(From::from("currently supported auth types are: http; apiKey")),
     }
 }
 
