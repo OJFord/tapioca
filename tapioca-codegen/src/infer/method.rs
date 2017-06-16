@@ -107,7 +107,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
 
     match schema["security"] {
         Yaml::BadValue => {
-            args.push(quote!{ authentication: &ServerAuth });
+            args.push(quote!{ authentication: ServerAuth });
             req_transforms.push(quote! {
                 .header(authentication)
             });
@@ -116,7 +116,7 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
             let struct_ident = Ident::new("OperationAuth");
 
             method_level_structs.push(auth::infer_v3(&struct_ident, &schema)?);
-            args.push(quote!{ authentication: &#method_mod::#struct_ident });
+            args.push(quote!{ authentication: #method_mod::#struct_ident });
             req_transforms.push(quote! {
                 .header(authentication)
             });
