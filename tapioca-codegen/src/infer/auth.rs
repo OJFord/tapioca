@@ -26,7 +26,8 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
     let header_name = schema["name"].as_str().expect("apiKey header name must be a string");
 
     Ok(quote! {
-        pub struct #scheme_ident(Vec<u8>);
+        #[derive(Clone, Debug)]
+        pub struct #scheme_ident(String);
 
         impl header::Header for #scheme_ident {
             fn header_name() -> &'static str {
@@ -35,10 +36,16 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
 
             fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<#scheme_ident> {
                 if raw.len() == 1 {
-                    Ok(Self { 0: raw[0] })
+                    Ok(Self { 0: String::from_utf8(raw[0])? })
                 } else {
                     Err(From::from(format!("Multiple auth headers {}", #scheme_ident)))
                 }
+            }
+        }
+
+        impl header::HeaderFormat for #scheme_ident {
+            fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str(self.0)
             }
         }
     })

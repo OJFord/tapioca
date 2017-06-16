@@ -123,6 +123,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs)?
     } else {
         server_auth_impl = quote!{
+            #[derive(Clone, Debug)]
             pub struct #auth_struct(());
 
             impl header::Header for #auth_struct {
@@ -132,6 +133,12 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
 
                 fn parse_header(_: &[Vec<u8>]) -> HeaderResult<Self> {
                     Ok(Self { 0: () })
+                }
+            }
+
+            impl header::HeaderFormat for #auth_struct {
+                fn fmt_header(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                    f.write_str("")
                 }
             }
         }
@@ -149,6 +156,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             #(#auth_scheme_defs)*
         }
 
+        use std::fmt;
         use ::tapioca::header;
         use ::tapioca::HeaderResult;
 
