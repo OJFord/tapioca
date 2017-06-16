@@ -74,10 +74,14 @@ pub(super) fn infer_v3(struct_name: &Ident, schema: &Yaml) -> TokensResult {
     let mut scheme_models: Vec<Tokens> = Vec::new();
     let mut scopes_models: Vec<Tokens> = Vec::new();
 
-    for (scheme, scopes) in schema.as_hash().expect("security requirements must be a map") {
-        let classname = scheme.as_str().expect("security scheme must be a string")
-            .to_class_case();
-        let ident = Ident::from(classname);
+    for scheme in schema.as_vec().expect("security requirements must be an array") {
+        let scheme = scheme.as_hash().expect("security requirement must be a map");
+        let scheme_id = scheme.keys().collect::<Vec<_>>().pop().unwrap();
+        let scopes = &scheme[scheme_id];
+
+        let classname = scheme_id.as_str()
+            .expect("security scheme identifier must be a string");
+        let ident = Ident::from(classname.to_class_case());
 
         scheme_variants.push(ident.clone());
         scheme_models.push(quote!{ auth_scheme::#ident });
