@@ -186,6 +186,19 @@ paths:
           description: "An Err response"
         401:
           description: "An Err response"
+  /redirect-to:
+    get:
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "An Ok response"
+        400:
+          description: "An Err response"
 components:
   schemas:
     AnArray:
