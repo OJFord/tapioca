@@ -47,13 +47,13 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
             }
 
             fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<#scheme_ident> {
-                Ok(Self { 0: String::from_utf8(raw[0])? })
+                Ok(Self { 0: String::from_utf8(raw[0].clone())? })
             }
         }
 
         impl header::HeaderFormat for #scheme_ident {
             fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                f.write_str(self.0)
+                f.write_str(self.0.as_str())
             }
         }
     })
