@@ -91,6 +91,31 @@ paths:
                     type: string
                   url:
                     type: string
+  /basic-auth/{user}/hunter2:
+    get:
+      parameters:
+        - name: user
+          in: path
+          schema:
+            type: string
+      security:
+        - http_basic: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - authenticated
+                  - user
+                properties:
+                  authenticated:
+                    type: boolean
+                  user:
+                    type: string
+        401:
+          description: "Not authorised"
   /ip:
     get:
       responses:
@@ -200,6 +225,10 @@ paths:
         400:
           description: "An Err response"
 components:
+  securitySchemes:
+    http_basic:
+      type: http
+      scheme: basic
   schemas:
     AnArray:
       type: array
