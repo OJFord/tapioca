@@ -143,8 +143,14 @@ paths:
               schema:
                 type: object
                 required:
+                  - headers
                   - json
                 properties:
+                  headers:
+                    type: object
+                    properties:
+                      Content-Length:
+                        type: string
                   json:
                     $ref: "#/components/schemas/PatchBody"
   /post:
