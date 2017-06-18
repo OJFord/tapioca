@@ -18,6 +18,10 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
             .expect("Parameter name must be a string.");
         let (param_type, maybe_at) = datatype::infer_v3(&schema["schema"])?;
 
+        let from_static_type = match param_type.as_str() {
+            "String" => quote!(str),
+            _ => param_type.clone(),
+        };
         let struct_ident = Ident::new(format!("ResourceId_{}", name));
         supporting_types.push(quote! {
             #[allow(non_camel_case_types)]
@@ -25,8 +29,8 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> StructBoundArgImpl {
 
             impl #struct_ident {
                 #[allow(dead_code)]
-                pub fn from_static(id: &'static #param_type) -> Self {
-                    Self { 0: id.clone() }
+                pub fn from_static(id: &'static #from_static_type) -> Self {
+                    Self { 0: id.clone().into() }
                 }
             }
 
