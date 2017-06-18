@@ -2,14 +2,22 @@
 name = "tapioca"
 version = "0.0.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
-description = "Type-safe REST APIs via OAS"
 repository = "https://github.com/OJFord/tapioca.git"
+description = "Type-safe REST client using the OpenAPI Specification"
+readme = "README.md"
 license-file = "LICENCE"
+keywords = ["REST", "API", "OAS", "OpenAPI"]
+categories = ["api-bindings", "development-tools", "web-programming::http-client"]
 
 [lib]
 name = "tapioca"
 path = "src/lib.rs"
 crate-type = ["rlib"]
+
+[badges]
+travis-ci = {repository="OJFord/tapioca"}
+is-it-maintained-issue-resolution = {repository="OJFord/tapioca"}
+is-it-maintained-open-issues = {repository="OJFord/tapioca"}
 
 [dependencies]
 base64 = "0.6"

@@ -2,7 +2,7 @@
 name = "tapioca-codegen"
 version = "0.0.0"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
-description = "Type-safe REST APIs via OAS"
+description = "Type-safe REST client using the OpenAPI Specification"
 repository = "https://github.com/OJFord/tapioca/tree/master/tapioca-codegen"
 license-file = "../LICENCE"
 
