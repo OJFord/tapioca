@@ -47,11 +47,7 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
             }
 
             fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<#scheme_ident> {
-                if raw.len() == 1 {
-                    Ok(Self { 0: String::from_utf8(raw[0])? })
-                } else {
-                    Err(From::from(format!("Multiple auth headers {}", #scheme_ident)))
-                }
+                Ok(Self { 0: String::from_utf8(raw[0])? })
             }
         }
 
