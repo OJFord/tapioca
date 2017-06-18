@@ -8,9 +8,10 @@ use httpbin::status__code_;
 static code: &i32 = &200;
 
 fn main() {
+    let auth = httpbin::ServerAuth::new();
     let dummy_created_id = status__code_::ResourceId_code::from_static(code);
 
-    status__code_::get(&dummy_created_id);
-    status__code_::delete(dummy_created_id);
+    status__code_::get(&dummy_created_id, auth);
+    status__code_::delete(dummy_created_id, auth);
 }
 

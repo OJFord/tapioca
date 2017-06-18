@@ -4,7 +4,9 @@ extern crate tapioca_testutil;
 tapioca_testutil::infer_test_api!(httpbin);
 
 fn main() {
-    match httpbin::anything::get() {
+    let auth = httpbin::ServerAuth::new();
+
+    match httpbin::anything::get(auth) {
         Ok(response) => match response.body() {
             httpbin::anything::get::OkBody::Status200(body) => assert!(
                 body.headers.accept.contains("application/json")

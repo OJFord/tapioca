@@ -4,5 +4,7 @@ extern crate tapioca_testutil;
 tapioca_testutil::infer_test_api!(httpbin);
 
 fn main() {
-    httpbin::nonexistent_path::get(); //~ Could not find `nonexistent_path`
+    let auth = httpbin::ServerAuth::new();
+
+    httpbin::nonexistent_path::get(auth); //~ Could not find `nonexistent_path`
 }

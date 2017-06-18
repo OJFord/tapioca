@@ -6,7 +6,9 @@ tapioca_testutil::infer_test_api!(httpbin);
 use httpbin::ip;
 
 fn main() {
-    match ip::get() {
+    let auth = httpbin::ServerAuth::new();
+
+    match ip::get(auth) {
         Ok(response) => match response.body() {
             ip::get::OkBody::Status200(body) => {
                 let ipv4_parts: Vec<&str> = body.origin

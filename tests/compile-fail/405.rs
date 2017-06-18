@@ -4,5 +4,7 @@ extern crate tapioca_testutil;
 tapioca_testutil::infer_test_api!(httpbin);
 
 fn main() {
-    httpbin::post::get(); //~ cannot find function `get`
+    let auth = httpbin::ServerAuth::new();
+
+    httpbin::post::get(auth); //~ cannot find function `get`
 }
