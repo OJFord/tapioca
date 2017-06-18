@@ -26,7 +26,7 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
     let header_name = schema["name"].as_str().expect("apiKey header name must be a string");
 
     Ok(quote! {
-        #[derive(Clone, Copy, Debug)]
+        #[derive(Clone, Debug)]
         pub struct #scheme_ident(String);
 
         impl From<String> for #scheme_ident {
