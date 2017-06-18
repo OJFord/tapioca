@@ -115,10 +115,17 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
         ref schema => {
             let struct_ident = Ident::new("OpAuth");
 
-            method_level_structs.push(auth::infer_v3(&struct_ident, &schema)?);
+            let (structs, variants) = auth::infer_v3(&struct_ident, &schema);
+            let scheme_match_arms = variants.iter()
+                .map(|v| quote!(#method_mod::#struct_ident::#v))
+                .collect::<Vec<_>>();
+
+            method_level_structs.push(structs);
             args.push(quote!{ authentication: #method_mod::#struct_ident });
             req_transforms.push(quote! {
-                .header(authentication)
+                .header(match authentication {
+                    #(#scheme_match_arms(scheme) => scheme,)*
+                })
             });
         },
     }

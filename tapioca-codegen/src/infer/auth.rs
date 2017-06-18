@@ -71,7 +71,7 @@ pub(super) fn infer_v3_component(scheme_name: &str, schema: &Yaml) -> TokensResu
     }
 }
 
-pub(super) fn infer_v3(struct_name: &Ident, schema: &Yaml) -> TokensResult {
+pub(super) fn infer_v3(struct_name: &Ident, schema: &Yaml) -> (Tokens, Vec<Ident>) {
     let mut scheme_variants: Vec<Ident> = Vec::new();
     let mut scheme_models: Vec<Tokens> = Vec::new();
     let mut scopes_models: Vec<Tokens> = Vec::new();
@@ -100,26 +100,14 @@ pub(super) fn infer_v3(struct_name: &Ident, schema: &Yaml) -> TokensResult {
         scopes_models.push(scopes_model);
     }
 
-    Ok(quote! {
-        #[derive(Clone, Debug)]
-        pub enum #struct_name {
-            #(#scheme_variants(#scheme_models<#scopes_models>),)*
-        }
-
-        impl header::Header for #struct_name {
-            fn header_name() -> &'static str {
-                <Self as header::Header>::header_name()
+    let scheme_variants2 = scheme_variants.clone();
+    (
+        quote! {
+            #[derive(Clone, Debug)]
+            pub enum #struct_name {
+                #(#scheme_variants(#scheme_models<#scopes_models>),)*
             }
-
-            fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<Self> {
-                <Self as header::Header>::parse_header(raw)
-            }
-        }
-
-        impl header::HeaderFormat for #struct_name {
-            fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                <Self as header::HeaderFormat>::fmt_header(&self, f)
-            }
-        }
-    })
+        },
+        scheme_variants2
+    )
 }

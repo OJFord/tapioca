@@ -120,7 +120,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
     let security_reqs = &schema["security"];
 
     if !security_reqs.is_badvalue() {
-        server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs)?
+        server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs).0;
     } else {
         server_auth_impl = quote!{
             #[derive(Clone, Copy, Debug)]
