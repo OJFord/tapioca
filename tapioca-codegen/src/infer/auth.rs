@@ -10,13 +10,7 @@ fn infer_v3_http(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
         .to_title_case().as_str()
     {
         "Basic" => Ok(quote! {
-            pub type #scheme_ident = header::Basic;
-
-            impl From<(String, String)> for #scheme_ident {
-                fn from((username, password): &(String, String)) -> Self {
-                    Self { username, password }
-                }
-            }
+            pub type #scheme_ident = ::tapioca::auth::HttpBasic;
         }),
         _ => Err(From::from("currently supported HTTP auth schemes are: Basic")),
     }

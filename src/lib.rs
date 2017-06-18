@@ -1,6 +1,7 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
+extern crate base64;
 extern crate reqwest;
 
 pub extern crate serde;
@@ -11,6 +12,7 @@ pub use reqwest::Client;
 pub use reqwest::Url;
 pub use serde::Deserialize;
 
+pub mod auth;
 pub mod response;
 pub mod datatype;
 pub mod query;

@@ -12,6 +12,7 @@ path = "src/lib.rs"
 crate-type = ["rlib"]
 
 [dependencies]
+base64 = "0.6"
 clippy = {version="0.0", optional=true}
 reqwest = "0.6"
 serde = "1.0"
