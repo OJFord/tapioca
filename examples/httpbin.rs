@@ -25,7 +25,7 @@ fn main() {
     let query = httpbin::post::post::QueryParams {
         echo: Some("echo me!".into()),
     };
-    match httpbin::post::post(query, auth) {
+    match httpbin::post::post(&query, auth) {
         Ok(response) => match response.body() {
             httpbin::post::post::OkBody::Status200(_) => assert!(true),
             _ => panic!(),

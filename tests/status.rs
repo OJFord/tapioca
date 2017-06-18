@@ -18,12 +18,12 @@ fn ok_err_matching() {
         url: "http://httpbin.org/status/400".into(),
     };
 
-    match redirect_to::get(query200, auth) {
+    match redirect_to::get(&query200, auth) {
         Ok(_) => assert!(true),
         Err(_) => assert!(false),
     }
 
-    match redirect_to::get(query400, auth) {
+    match redirect_to::get(&query400, auth) {
         Ok(_) => assert!(false),
         Err(_) => assert!(true),
     }
@@ -41,7 +41,7 @@ fn status_body_matching() {
         url: "http://httpbin.org/status/400".into(),
     };
 
-    match redirect_to::get(query200, auth) {
+    match redirect_to::get(&query200, auth) {
         Ok(response) => match response.body() {
             redirect_to::get::OkBody::Status200(_) => assert!(true),
             _ => assert!(false),
@@ -49,7 +49,7 @@ fn status_body_matching() {
         Err(_) => assert!(false),
     }
 
-    match redirect_to::get(query400, auth) {
+    match redirect_to::get(&query400, auth) {
         Ok(_) => assert!(false),
         Err(response) => match response.body() {
             redirect_to::get::ErrBody::Status400(_) => assert!(true),

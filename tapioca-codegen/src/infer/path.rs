@@ -35,6 +35,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
     Ok(quote! {
         #[allow(non_snake_case)]
         pub mod #path_mod {
+            #[allow(unused_imports)]
             use ::tapioca::Body;
             use ::tapioca::Client;
             use ::tapioca::Url;
@@ -43,9 +44,12 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
             #[allow(unused_imports)]
             use ::tapioca::query::QueryString;
 
+            #[allow(unused_imports)]
             use super::auth_scheme;
+            #[allow(unused_imports)]
             use super::schema_ref;
             use super::API_URL;
+            #[allow(unused_imports)]
             use super::ServerAuth;
 
             const API_PATH: &'static str = #path;

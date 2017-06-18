@@ -123,7 +123,7 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         server_auth_impl = auth::infer_v3(&auth_struct, &security_reqs).0;
     } else {
         server_auth_impl = quote!{
-            #[derive(Clone, Copy, Debug)]
+            #[derive(Clone, Copy, Debug, Default)]
             pub struct #auth_struct(());
 
             impl #auth_struct {
@@ -159,7 +159,9 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
         }
 
         pub mod auth_scheme {
+            #[allow(unused_imports)]
             use ::tapioca::header;
+            #[allow(unused_imports)]
             use ::tapioca::HeaderResult;
 
             #(#auth_scheme_defs)*

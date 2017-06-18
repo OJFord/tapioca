@@ -96,7 +96,8 @@ pub(super) fn infer_v3(schema: &Yaml) -> TokensResult {
             match response.json::<T>() {
                 Ok(body) => Ok(body),
                 Err(_) => match response.read_to_string(&mut buf) {
-                    Err(_) | Ok(0) => serde_json::from_str::<T>("null").or(Err(buf)),
+                    Err(_)
+                    | Ok(0) => serde_json::from_str::<T>("null").or_else(|_| Err(buf)),
                     _ => Err(buf),
                 },
             }

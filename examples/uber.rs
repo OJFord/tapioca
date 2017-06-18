@@ -16,7 +16,7 @@ fn main() {
         longitude: 237.8,
     };
 
-    match uber::products::get(query_params, auth) {
+    match uber::products::get(&query_params, auth) {
         Ok(result) => match result.body() {
             OkBody::Status200(body) => {
                 let list = body.products

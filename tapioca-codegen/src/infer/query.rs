@@ -53,7 +53,7 @@ pub(super) fn infer_v3(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl
             }
         }),
         None,
-        Some(quote! { query_parameters: #structs_mod::QueryParams }),
+        Some(quote! { query_parameters: &#structs_mod::QueryParams }),
         Some(quote! {
             .query_pairs_mut()
                 .extend_pairs(query_parameters.as_query_kv())

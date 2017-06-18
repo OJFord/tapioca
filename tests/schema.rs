@@ -13,7 +13,7 @@ fn response_ref() {
         array: test_vec.clone(),
     };
 
-    match anything_ref::get(query, auth) {
+    match anything_ref::get(&query, auth) {
         Ok(response) => match response.body() {
             anything_ref::get::OkBody::Status200(body) => assert_eq!(body.args.array, test_vec),
             _ => assert!(false),
@@ -32,7 +32,7 @@ fn response_array() {
         array: test_vec.clone(),
     };
 
-    match anything_array::get(query, auth) {
+    match anything_array::get(&query, auth) {
         Ok(response) => match response.body() {
             anything_array::get::OkBody::Status200(body) => assert_eq!(
                 body.args.array,

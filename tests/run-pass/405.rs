@@ -10,7 +10,7 @@ fn main() {
         echo: Some("foobar".into()),
     };
 
-    match httpbin::post::post(query, auth) {
+    match httpbin::post::post(&query, auth) {
         Ok(response) => assert!(true),
         Err(response) => assert!(false),
     }

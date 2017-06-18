@@ -137,8 +137,11 @@ pub(super) fn infer_v3(method: &str, schema: &Yaml) -> InferResult<(Tokens, Opti
             pub mod #method_mod {
                 #[allow(unused_imports)]
                 use ::tapioca::header;
+                #[allow(unused_imports)]
                 use ::tapioca::HeaderResult;
+                #[allow(unused_imports)]
                 use super::auth_scheme;
+                #[allow(unused_imports)]
                 use super::schema_ref;
 
                 #(#method_level_structs)*
