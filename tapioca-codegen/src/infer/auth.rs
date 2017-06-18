@@ -13,7 +13,7 @@ fn infer_v3_http(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
             pub type #scheme_ident = header::Basic;
 
             impl From<(String, String)> for #scheme_ident {
-                pub fn from((username, password): &(String, String)) -> Self {
+                fn from((username, password): &(String, String)) -> Self {
                     Self { username, password }
                 }
             }
@@ -30,7 +30,7 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
         pub struct #scheme_ident(String);
 
         impl From<String> for #scheme_ident {
-            pub fn from(key: String) -> Self {
+            fn from(key: String) -> Self {
                 Self { 0: key }
             }
         }
