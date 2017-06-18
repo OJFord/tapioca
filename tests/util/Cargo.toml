@@ -1,6 +1,6 @@
 [package]
 name = "tapioca-testutil"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Oliver Ford <ojf13@imperial.ac.uk>"]
 repository = "https://github.com/OJFord/tapioca.git"
 license-file = "../../LICENCE"
@@ -11,5 +11,9 @@ path = "lib.rs"
 [dependencies]
 serde = "1.0"
 serde_derive = "1.0"
-tapioca = {path="../../"}
-tapioca-codegen = {path="../../tapioca-codegen"}
+
+[dependencies.tapioca]
+path = "../../"
+
+[dependencies.tapioca-codegen]
+path = "../../tapioca-codegen"
