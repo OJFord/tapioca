@@ -29,6 +29,12 @@ fn infer_v3_api_key(scheme_ident: &Ident, schema: &Yaml) -> TokensResult {
         #[derive(Clone, Debug)]
         pub struct #scheme_ident(String);
 
+        impl From<&'static str> for #scheme_ident {
+            fn from(key: &'static str) -> Self {
+                Self { 0: key.into() }
+            }
+        }
+
         impl From<String> for #scheme_ident {
             fn from(key: String) -> Self {
                 Self { 0: key }

@@ -9,7 +9,7 @@ infer_api!(uber, "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/Op
 fn main() {
     use uber::products::get::{OpAuth, QueryParams, OkBody, ErrBody};
 
-    let auth = OpAuth::from("abc");
+    let auth = OpAuth::Apikey("abc".into());
 
     let query_params = QueryParams {
         latitude: 10.3,
