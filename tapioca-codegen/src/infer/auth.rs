@@ -99,8 +99,25 @@ pub(super) fn infer_v3(struct_name: &Ident, schema: &Yaml) -> TokensResult {
     }
 
     Ok(quote! {
+        #[derive(Clone, Debug)]
         pub enum #struct_name {
             #(#scheme_variants(#scheme_models<#scopes_models>),)*
+        }
+
+        impl header::Header for #struct_name {
+            fn header_name() -> &'static str {
+                <Self as header::Header>::header_name()
+            }
+
+            fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<Self> {
+                <Self as header::Header>::parse_header(raw)
+            }
+        }
+
+        impl header::HeaderFormat for #struct_name {
+            fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                <Self as header::HeaderFormat>::fmt_header(&self, f)
+            }
         }
     })
 }
