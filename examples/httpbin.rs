@@ -6,6 +6,10 @@ extern crate tapioca;
 
 infer_api!(httpbin, "https://raw.githubusercontent.com/OJFord/tapioca/master/tests/schemata/httpbin.yml");
 
+use httpbin::basic_auth__user__hunter_2 as basic_auth;
+use basic_auth::get::OpAuth::HttpBasic;
+
+static USER: &str = "baz";
 
 fn main() {
     let auth = httpbin::ServerAuth::new();
@@ -28,4 +32,9 @@ fn main() {
         },
         _ => panic!(),
     }
+
+    let user_id = basic_auth::ResourceId_user::from_static(USER);
+    let auth = HttpBasic((USER.into(), "hunter2".into()).into());
+    let response = basic_auth::get(&user_id, auth.into());
+    println!("Auth response: {:?}", response.body());
 }
