@@ -35,6 +35,7 @@ pub(super) fn infer_v3(path: &str, schema: &Yaml) -> TokensResult {
     Ok(quote! {
         #[allow(non_snake_case)]
         pub mod #path_mod {
+            use ::tapioca::Body;
             use ::tapioca::Client;
             use ::tapioca::Url;
             use ::tapioca::header;

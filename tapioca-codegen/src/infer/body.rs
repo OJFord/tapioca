@@ -13,7 +13,12 @@ fn infer_v3_json(structs_mod: &Ident, schema: &Yaml) -> StructBoundArgImpl {
         }),
         None,
         Some(quote!{ body: &#structs_mod::RequestBody }),
-        Some(quote!{ .json(body) }),
+        Some(quote!{
+            .json(body)
+            .header(header::ContentLength(
+                ::tapioca::serde_json::to_vec(body).unwrap().len() as u64
+            ))
+        })
     ))
 }
 

@@ -8,6 +8,7 @@ pub extern crate serde;
 pub extern crate serde_json;
 
 pub use reqwest::header;
+pub use reqwest::Body;
 pub use reqwest::Client;
 pub use reqwest::Url;
 pub use serde::Deserialize;
