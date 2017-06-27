@@ -17,24 +17,22 @@ fn main() {
     match httpbin::ip::get(auth) {
         Ok(response) => match response.body() {
             httpbin::ip::get::OkBody::Status200(body) => println!("Your IP is {}", body.origin),
-            _ => panic!(),
+            _ => println!("httbin.org did something unexpected"),
         },
-        _ => println!("Failed to find IP address"),
-    }
-
-    let query = httpbin::post::post::QueryParams {
-        echo: Some("echo me!".into()),
-    };
-    match httpbin::post::post(&query, auth) {
-        Ok(response) => match response.body() {
-            httpbin::post::post::OkBody::Status200(_) => assert!(true),
-            _ => panic!(),
-        },
-        _ => panic!(),
+        Err(_) => println!("httpbin.org errored"),
     }
 
     let user_id = basic_auth::ResourceId_user::from_static(USER);
     let auth = HttpBasic((USER.into(), "hunter2".into()).into());
-    let response = basic_auth::get(&user_id, auth.into());
-    println!("Auth response: {:?}", response.body());
+    match basic_auth::get(&user_id, auth.into()) {
+        Ok(response) => match response.body() {
+            basic_auth::get::OkBody::Status200(body) => if body.authenticated {
+                println!("User '{}' authenticated OK!", body.user)
+            } else {
+                println!("Authentication failed for user '{}'!", body.user)
+            },
+            _ => println!("httbin.org did something unexpected"),
+        },
+        Err(_) => println!("httpbin.org errored"),
+    }
 }
