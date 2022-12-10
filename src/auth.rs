@@ -30,17 +30,15 @@ impl header::Header for HttpBasic {
         "Authorization"
     }
 
-    fn parse_header(raw: &[Vec<u8>]) -> HeaderResult<HttpBasic> {
+    fn parse_header(raw: &header::Raw) -> HeaderResult<HttpBasic> {
         let encoded = &raw[0];
         let decoded = String::from_utf8(base64::decode(encoded).unwrap())?;
         let parts = decoded.split(':').collect::<Vec<_>>();
 
         Ok(Self { user: parts[0].into(), password: parts[1].into() })
     }
-}
 
-impl header::HeaderFormat for HttpBasic {
-    fn fmt_header(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        <Self as ::std::fmt::Display>::fmt(self, f)
+    fn fmt_header(&self, f: &mut header::Formatter) -> ::std::fmt::Result {
+        f.fmt_line(self)
     }
 }

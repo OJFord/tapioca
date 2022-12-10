@@ -22,7 +22,7 @@ is-it-maintained-open-issues = {repository="OJFord/tapioca"}
 [dependencies]
 base64 = "0.6"
 clippy = {version="0.0", optional=true}
-reqwest = "0.6"
+reqwest = {version="0.9", features=["hyper-011"]}
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"

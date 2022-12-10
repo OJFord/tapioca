@@ -1,4 +1,3 @@
-#![feature(proc_macro)]
 #![recursion_limit="256"]
 
 extern crate inflector;

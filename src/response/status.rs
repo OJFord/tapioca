@@ -16,8 +16,8 @@ impl<'a> Status for StatusCode {
 
     fn of(response: &Option<&Self::OfType>) -> Self {
         match *response {
-            Some(r) => *r.status(),
-            None => Self::from_u16(520),
+            Some(r) => r.status(),
+            None => Self::from_u16(520).unwrap(),
         }
     }
 

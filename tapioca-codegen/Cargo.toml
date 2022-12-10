@@ -13,6 +13,6 @@ proc-macro = true
 Inflector = "0.10.0"
 quote = "0.3"
 regex = "0.2"
-reqwest = "0.6"
+reqwest = {version="0.9", features=["hyper-011"]}
 syn = "0.11"
 yaml-rust = "0.3"

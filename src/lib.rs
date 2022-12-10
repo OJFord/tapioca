@@ -7,7 +7,7 @@ extern crate reqwest;
 pub extern crate serde;
 pub extern crate serde_json;
 
-pub use reqwest::header;
+pub use reqwest::hyper_011::header;
 pub use reqwest::Body;
 pub use reqwest::Client;
 pub use reqwest::Url;
@@ -18,7 +18,7 @@ pub mod response;
 pub mod datatype;
 pub mod query;
 
-pub type HeaderResult<H> = Result<H, reqwest::HyperError>;
+pub type HeaderResult<H> = Result<H, reqwest::hyper_011::Error>;
 
 #[macro_export]
 macro_rules! infer_api {
